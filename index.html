@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جدول التشخيص - مادة الرياضيات - الصف الثالث متوسط</title>
+
+<!-- ============ تعديلات PWA (جديدة) ============ -->
+<meta name="theme-color" content="#15304C">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="تشخيص الرياضيات">
+<!-- ============ نهاية تعديلات PWA ============ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Almarai:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --navy:#15304C;
+    --navy-dark:#0C2035;
+    --navy-mid:#1F4569;
+    --gold:#B4934F;
+    --gold-light:#E7D4A6;
+    --bg:#F1F3F6;
+    --surface:#FFFFFF;
+    --border:#D7DBE3;
+    --border-strong:#B9C0CC;
+    --text:#1E2733;
+    --text-muted:#5B6472;
+    --ok:#1E7A46;
+    --ok-bg:#E5F4EB;
+    --bad:#B33124;
+    --bad-bg:#FBE9E7;
+    --neutral:#8B93A1;
+    --neutral-bg:#F0F1F3;
+    --radius:10px;
+    --shadow:0 2px 10px rgba(21,48,76,0.08);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family:'Almarai','Segoe UI',Tahoma,sans-serif;
+    color:var(--text);
+    padding:28px 22px 60px;
+  }
+
+  h1,h2,.brand-font{font-family:'Cairo','Segoe UI',Tahoma,sans-serif;}
+
+  /* ============ Header banner ============ */
+  .page-header{
+    background:linear-gradient(135deg,var(--navy-dark) 0%, var(--navy) 55%, var(--navy-mid) 100%);
+    border-radius:14px;
+    padding:26px 32px 22px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    margin-bottom:18px;
+  }
+  .page-header::after{
+    content:"";
+    position:absolute;
+    inset-inline-start:0;
+    bottom:0;
+    height:5px;
+    width:100%;
+    background:linear-gradient(90deg,var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+  }
+  .eyebrow{
+    font-size:12.5px;
+    letter-spacing:.5px;
+    color:var(--gold-light);
+    font-weight:700;
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px;height:2px;background:var(--gold);display:inline-block;
+  }
+  .page-header h1{
+    font-size:26px;
+    font-weight:800;
+    margin:0 0 6px;
+    line-height:1.35;
+  }
+  .page-header .sub{
+    font-size:15px;
+    font-weight:700;
+    color:#DCE4EE;
+    margin:0 0 10px;
+  }
+  .page-header .goal{
+    font-size:13.5px;
+    color:#B9C6D8;
+    margin:0;
+    max-width:640px;
+    line-height:1.6;
+  }
+  .header-stat{
+    position:absolute;
+    left:28px;
+    top:26px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.18);
+    border-radius:10px;
+    padding:10px 18px;
+    text-align:center;
+    backdrop-filter:blur(2px);
+  }
+  .header-stat .num{
+    font-family:'Cairo',sans-serif;
+    font-size:24px;
+    font-weight:800;
+    color:#fff;
+    display:block;
+    line-height:1.1;
+  }
+  .header-stat .lbl{
+    font-size:11px;
+    color:var(--gold-light);
+    font-weight:700;
+  }
+
+  /* ============ Toolbar ============ */
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:16px;
+    box-shadow:var(--shadow);
+  }
+  .toolbar button{
+    font-family:'Cairo','Almarai',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    border:1px solid var(--border-strong);
+    background:var(--surface);
+    color:var(--navy);
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    transition:background .15s, box-shadow .15s, transform .05s;
+  }
+  .toolbar button:hover{background:#F3F5F8; box-shadow:0 2px 6px rgba(21,48,76,.10);}
+  .toolbar button:active{transform:translateY(1px);}
+  .toolbar button.primary{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+  }
+  .toolbar button.primary:hover{background:var(--navy-mid);}
+  .toolbar button.danger{
+    color:var(--bad);
+    border-color:#E7C6C1;
+  }
+  .toolbar button.danger:hover{background:var(--bad-bg);}
+  .toolbar .spacer{flex:1;}
+  .toolbar .count-pill{
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    font-size:13.5px;
+    background:var(--neutral-bg);
+    border:1px solid var(--border);
+    color:var(--navy);
+    padding:9px 16px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .toolbar .count-pill b{font-size:15px;}
+  #importFileInput{display:none;}
+
+  /* ============ Table ============ */
+  .table-wrap{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    overflow-x:auto;
+    padding:4px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    min-width:900px;
+  }
+  col.col-num{width:5%;}
+  col.col-name{width:29%;}
+  col.col-domain{width:11%;}
+
+  thead th{
+    background:var(--navy);
+    color:#fff;
+    font-family:'Cairo',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    padding:12px 6px 14px;
+    text-align:center;
+    border:1px solid var(--navy-mid);
+    line-height:1.45;
+    vertical-align:middle;
+  }
+  thead th:first-child{border-top-right-radius:8px;}
+  thead th:last-child{border-top-left-radius:8px;}
+  th.domain-header{
+    cursor:pointer;
+    position:relative;
+    user-select:none;
+    transition:background .15s;
+  }
+  th.domain-header:hover{background:var(--navy-mid);}
+  th.col-name-header{text-align:right; padding-right:14px;}
+  .click-hint{
+    display:block;
+    font-size:9.5px;
+    font-weight:400;
+    color:var(--gold-light);
+    margin-top:4px;
+    opacity:.9;
+  }
+
+  tbody td{
+    border:1px solid var(--border);
+    padding:3px 6px;
+    text-align:center;
+    font-size:14px;
+    vertical-align:middle;
+  }
+  tfoot td{
+    border:1px solid var(--border);
+    padding:8px 6px;
+    text-align:center;
+    font-size:14px;
+    vertical-align:middle;
+  }
+  tbody tr:nth-child(even){background:#FAFBFC;}
+  tbody tr:hover{background:#F3F6FA;}
+
+  td.name-cell{
+    text-align:right;
+    padding-right:10px;
+  }
+  .name-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .name-row input{
+    flex:1;
+    border:1px solid transparent;
+    background:transparent;
+    font-family:'Almarai',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--text);
+    padding:2px 6px;
+    border-radius:6px;
+    min-width:0;
+    width:100%;
+  }
+  .name-row input:hover{border-color:var(--border);}
+  .name-row input:focus{
+    outline:none;
+    border-color:var(--navy-mid);
+    background:#fff;
+  }
+  .row-num{
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    color:var(--text-muted);
+  }
+  .del-btn{
+    border:none;
+    background:transparent;
+    color:var(--bad);
+    font-size:13px;
+    cursor:pointer;
+    width:20px;
+    height:20px;
+    border-radius:6px;
+    flex-shrink:0;
+    line-height:1;
+  }
+  .del-btn:hover{background:var(--bad-bg);}
+
+  .state-cell{cursor:pointer;}
+  .state-cell .mark{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:20px;
+    height:20px;
+    border-radius:6px;
+    font-size:13px;
+    margin:0 auto;
+  }
+  .state-cell[data-state="1"] .mark{background:var(--ok-bg); color:var(--ok);}
+  .state-cell[data-state="2"] .mark{background:var(--bad-bg); color:var(--bad);}
+  .state-cell[data-state="0"] .mark{background:var(--neutral-bg); color:var(--neutral); border:1.5px dashed var(--border-strong);}
+
+  tfoot td.label-cell{
+    background:var(--neutral-bg);
+    font-family:'Cairo',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    text-align:right;
+    padding-right:14px;
+    color:var(--navy);
+  }
+  tfoot tr.row-ok td.count-cell{color:var(--ok); font-weight:800; font-family:'Cairo',sans-serif; background:var(--ok-bg);}
+  tfoot tr.row-bad td.count-cell{color:var(--bad); font-weight:800; font-family:'Cairo',sans-serif; background:var(--bad-bg);}
+
+  .empty-state{
+    text-align:center;
+    padding:46px 20px;
+    color:var(--text-muted);
+    font-weight:700;
+  }
+
+  /* ============ Legend ============ */
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+    align-items:center;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 18px;
+    margin-top:14px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--text-muted);
+    box-shadow:var(--shadow);
+  }
+  .legend span{display:flex; align-items:center; gap:6px;}
+  .legend .dot{font-size:15px;}
+
+  /* ============ Modal ============ */
+  .modal-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(12,32,53,0.55);
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    padding:16px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:#fff;
+    border-radius:14px;
+    width:100%;
+    max-width:420px;
+    max-height:82vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 12px 40px rgba(0,0,0,.25);
+  }
+  .modal-head{
+    background:var(--navy);
+    color:#fff;
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .modal-head h3{
+    font-family:'Cairo',sans-serif;
+    font-size:15.5px;
+    margin:0;
+    font-weight:800;
+  }
+  .modal-close{
+    background:rgba(255,255,255,0.12);
+    border:none;
+    color:#fff;
+    width:28px;height:28px;
+    border-radius:7px;
+    cursor:pointer;
+    font-size:15px;
+    line-height:1;
+  }
+  .modal-close:hover{background:rgba(255,255,255,0.22);}
+  .modal-body{padding:18px; overflow-y:auto;}
+  .choice-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    background:#fff;
+    font-family:'Cairo',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    margin-bottom:10px;
+    color:var(--text);
+  }
+  .choice-btn.ok{border-color:#BFE3CC;}
+  .choice-btn.ok:hover{background:var(--ok-bg);}
+  .choice-btn.bad{border-color:#F0C6BF;}
+  .choice-btn.bad:hover{background:var(--bad-bg);}
+  .choice-btn .num{
+    background:var(--neutral-bg);
+    border-radius:20px;
+    padding:3px 12px;
+    font-size:13px;
+  }
+  .choice-btn.ok .num{background:var(--ok-bg); color:var(--ok);}
+  .choice-btn.bad .num{background:var(--bad-bg); color:var(--bad);}
+
+  .back-link{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    background:none;
+    border:none;
+    color:var(--navy-mid);
+    font-weight:700;
+    font-family:'Cairo',sans-serif;
+    font-size:13px;
+    cursor:pointer;
+    padding:0 0 12px;
+  }
+  .name-list{
+    list-style:none;
+    margin:0 0 16px;
+    padding:0;
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .name-list li{
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    font-weight:700;
+    font-size:13.5px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .name-list li:last-child{border-bottom:none;}
+  .name-list li:nth-child(even){background:#FAFBFC;}
+  .name-list .idx{color:var(--text-muted); font-family:'Cairo',sans-serif; font-weight:800; font-size:12px; width:20px;}
+  .list-empty{
+    text-align:center;
+    color:var(--text-muted);
+    font-weight:700;
+    padding:24px 10px;
+    font-size:13.5px;
+  }
+  .modal-print-btn{
+    width:100%;
+    padding:12px;
+    border-radius:9px;
+    border:none;
+    background:var(--navy);
+    color:#fff;
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    font-size:13.5px;
+    cursor:pointer;
+  }
+  .modal-print-btn:hover{background:var(--navy-mid);}
+
+  /* ============ Print-only list area ============ */
+  #printListArea{display:none; padding:24px 6px 6px; font-family:'Almarai','Segoe UI',Tahoma,sans-serif;}
+  #printListArea .print-list-banner{
+    border-bottom:3px double #000;
+    padding-bottom:10px;
+    margin-bottom:4px;
+    text-align:center;
+  }
+  #printListArea .print-list-eyebrow{
+    font-family:'Cairo',sans-serif;
+    font-size:11.5px;
+    font-weight:800;
+    letter-spacing:.5px;
+    color:#555;
+    margin:0 0 4px;
+  }
+  #printListArea h2{
+    font-family:'Cairo',sans-serif;
+    font-size:21px;
+    font-weight:800;
+    margin:0 0 6px;
+    color:#000;
+    text-align:center;
+  }
+  #printListArea .meta{
+    font-size:12.5px;
+    color:#333;
+    margin:0 0 18px;
+    font-weight:700;
+    text-align:center;
+  }
+  #printListArea table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:6px;
+  }
+  #printListArea thead th{
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    font-size:13px;
+    text-align:right;
+    padding:9px 10px;
+    border:1px solid #000;
+    background:#e9e9e9;
+    color:#000;
+  }
+  #printListArea thead th.col-idx{width:50px; text-align:center;}
+  #printListArea tbody td{
+    border:1px solid #444;
+    padding:9px 10px;
+    font-size:13.5px;
+    font-weight:700;
+  }
+  #printListArea tbody td.col-idx{
+    text-align:center;
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    color:#333;
+  }
+  #printListArea tbody tr:nth-child(even){background:#f5f5f5;}
+  #printListArea .print-list-empty{
+    text-align:center;
+    padding:22px;
+    font-weight:700;
+    color:#555;
+    border:1px solid #444;
+  }
+
+  /* ============ Decorative icons (hidden on print) ============ */
+  .deco-icon{display:inline;}
+
+  /* ============ Print media ============ */
+  @page{
+    margin:1.6cm 1.2cm;
+  }
+  @media print{
+    body{padding:0; background:#fff;}
+    .toolbar, .modal-overlay, .legend .deco-icon, .header-stat, .eyebrow::before{display:none !important;}
+    .page-header{
+      background:#fff !important;
+      color:#000 !important;
+      border-radius:0;
+      box-shadow:none;
+      padding:0 0 10px;
+      margin-bottom:12px;
+      border-bottom:2px solid #000;
+      text-align:center;
+    }
+    .page-header::after{display:none;}
+    .page-header h1{color:#000; font-size:20px; text-align:center;}
+    .page-header .sub{color:#000; font-size:13px; text-align:center;}
+    .page-header .goal{color:#333; font-size:11.5px; text-align:center; max-width:none; margin-inline:auto;}
+    .eyebrow{color:#000; justify-content:center;}
+    .table-wrap{box-shadow:none; border:1px solid #000; padding:0;}
+    table{min-width:0;}
+    thead th{background:#e9e9e9 !important; color:#000 !important; border:1px solid #000;}
+    th.domain-header .deco-icon{display:none;}
+    .click-hint{display:none;}
+    tbody td, tfoot td{border:1px solid #444; color:#000;}
+    tbody tr:nth-child(even){background:#f7f7f7 !important;}
+    .del-btn{display:none;}
+    .name-row input{border:none; color:#000;}
+    .state-cell .mark{background:none !important; border:none !important; color:#000 !important; width:auto; height:auto;}
+    tfoot td.label-cell{background:#f0f0f0 !important; color:#000;}
+    tfoot tr.row-ok td.count-cell, tfoot tr.row-bad td.count-cell{background:#fff !important; color:#000 !important;}
+    .legend{box-shadow:none; border:1px solid #000;}
+
+    tfoot{display:table-row-group;}
+
+    body.print-list-mode #app{display:none !important;}
+    body.print-list-mode #printListArea{display:block !important;}
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <div class="page-header">
+    <div class="header-stat">
+      <span class="num" id="studentCountBadge">0</span>
+      <span class="lbl">عدد الطلاب</span>
+    </div>
+    <h1>جدول التشخيص لمادة الرياضيات</h1>
+    <p class="sub">الصف الثالث متوسط - الفصل الدراسي الأول</p>
+    <p class="goal">تحديد مدى استعداد الطلاب لدراسة الصف الثالث متوسط</p>
+  </div>
+
+  <div class="toolbar">
+    <button class="primary" onclick="addStudent()"><span class="deco-icon">➕</span> إضافة طالب</button>
+    <button onclick="document.getElementById('importFileInput').click()"><span class="deco-icon">📥</span> استيراد من Excel</button>
+    <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" onchange="handleImportFile(event)">
+    <button onclick="exportCSV()"><span class="deco-icon">📤</span> تصدير CSV</button>
+    <button onclick="window.print()"><span class="deco-icon">🖨️</span> طباعة</button>
+    <span class="spacer"></span>
+    <button class="danger" onclick="deleteAll()"><span class="deco-icon">🗑️</span> حذف الكل</button>
+    <span class="count-pill"><span class="deco-icon">👥</span> عدد الطلاب: <b id="toolbarCount">0</b></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-num">
+        <col class="col-name">
+        <col class="col-domain"><col class="col-domain"><col class="col-domain">
+        <col class="col-domain"><col class="col-domain"><col class="col-domain">
+      </colgroup>
+      <thead>
+        <tr id="headerRow"></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+      <tfoot id="tableFoot"></tfoot>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot">✅</span> = متقن</span>
+    <span><span class="dot">❌</span> = يحتاج مراجعة</span>
+    <span><span class="dot">⬜</span> = لم يتم التقييم بعد</span>
+    <span class="deco-icon">🔹 اضغط على رأس أي مجال لعرض قائمة المتقنين أو غير المتقنين</span>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitle">مجال</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Printable list (used only when printing a student list from the modal) -->
+<div id="printListArea">
+  <div class="print-list-banner">
+    <p class="print-list-eyebrow">جدول التشخيص لمادة الرياضيات — الصف الثالث متوسط — الفصل الدراسي الأول</p>
+    <h2 id="printListTitle"></h2>
+    <p class="meta" id="printListMeta"></p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-idx">#</th>
+        <th>اسم الطالب</th>
+      </tr>
+    </thead>
+    <tbody id="printListItems"></tbody>
+  </table>
+</div>
+
+<script>
+/* ============================================================
+   طلب تخزين دائم (جديد - PWA)
+   ============================================================ */
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(() => {});
+}
+
+/* ============================================================
+   Data model
+   ============================================================ */
+const STORAGE_KEY = 'math_diagnostic_g4_t1_v2';
+
+const domainDefs = [
+  { icon:'🔢', label:'الأعداد<br>والعمليات عليها', title:'الأعداد والعمليات عليها' },
+  { icon:'🧮', label:'الكسور الاعتيادية<br>والعشرية', title:'الكسور الاعتيادية والعشرية' },
+  { icon:'✖️', label:'الجبر<br>والمعادلات', title:'الجبر والمعادلات' },
+  { icon:'📈', label:'الدوال<br>والمتباينات', title:'الدوال والمتباينات' },
+  { icon:'📐', label:'الهندسة<br>والقياس', title:'الهندسة والقياس' },
+  { icon:'📊', label:'الإحصاء<br>والاحتمال', title:'الإحصاء والاحتمال' }
+];
+
+let students = [];
+let currentModalDomain = null;
+
+function newStudent(name){
+  return { id: 's_' + Date.now() + '_' + Math.random().toString(36).slice(2,8), name: name || '', domains: Array(domainDefs.length).fill(0) };
+}
+
+/* ============================================================
+   Persistence
+   ============================================================ */
+function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
+  }catch(e){
+    console.error('تعذر حفظ البيانات محلياً', e);
+  }
+}
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed)) {
+        students = parsed.map(s => {
+          // ensure existing dynamic array matches 6 domains length
+          if (!s.domains || s.domains.length !== domainDefs.length) {
+            s.domains = Array(domainDefs.length).fill(0);
+          }
+          return s;
+        });
+      }
+    }
+  }catch(e){
+    console.error('تعذر تحميل البيانات المحفوظة', e);
+    students = [];
+  }
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+function renderHeader(){
+  const tr = document.getElementById('headerRow');
+  let html = `<th>#</th><th class="col-name-header">اسم الطالب</th>`;
+  domainDefs.forEach((d,i)=>{
+    html += `
+      <th class="domain-header" data-domain="${i}" onclick="openChoiceModal(${i})">
+        <span class="deco-icon">${d.icon}</span> ${d.label}
+        <span class="click-hint deco-icon">👆 اضغط للتصفية</span>
+      </th>`;
+  });
+  tr.innerHTML = html;
+}
+
+function renderBody(){
+  const tbody = document.getElementById('tableBody');
+  if(students.length === 0){
+    tbody.innerHTML = `<tr><td colspan="${domainDefs.length + 2}" class="empty-state">لا يوجد طلاب بعد — اضغط "إضافة طالب" أو "استيراد من Excel" للبدء</td></tr>`;
+    return;
+  }
+  let html = '';
+  students.forEach((s, idx)=>{
+    html += `<tr data-id="${s.id}">`;
+    html += `<td class="row-num">${idx+1}</td>`;
+    html += `<td class="name-cell">
+        <div class="name-row">
+          <input type="text" value="${escapeAttr(s.name)}" placeholder="اسم الطالب" title="${escapeAttr(s.name)}"
+                 oninput="updateName('${s.id}', this.value)" onblur="saveData()">
+          <button class="del-btn" title="حذف الطالب" onclick="deleteStudent('${s.id}')">🗑️</button>
+        </div>
+      </td>`;
+    s.domains.forEach((state, di)=>{
+      const symbol = state===1 ? '✅' : state===2 ? '❌' : '⬜';
+      html += `<td class="state-cell" data-state="${state}" onclick="cycleState('${s.id}', ${di})">
+          <span class="mark">${symbol}</span>
+        </td>`;
+    });
+    html += `</tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function renderFoot(){
+  const tfoot = document.getElementById('tableFoot');
+  if(students.length === 0){ tfoot.innerHTML = ''; return; }
+
+  const okCounts = domainDefs.map((_,i)=> students.filter(s=>s.domains[i]===1).length);
+  const badCounts = domainDefs.map((_,i)=> students.filter(s=>s.domains[i]===2).length);
+
+  let html = `<tr class="row-ok">
+      <td colspan="2" class="label-cell"><span class="deco-icon">📌</span> عدد الطلاب المتقنين لكل مجال (✅)</td>`;
+  okCounts.forEach(c=> html += `<td class="count-cell">${c}</td>`);
+  html += `</tr>`;
+
+  html += `<tr class="row-bad">
+      <td colspan="2" class="label-cell"><span class="deco-icon">📌</span> عدد الطلاب الغير متقنين لكل مجال (❌)</td>`;
+  badCounts.forEach(c=> html += `<td class="count-cell">${c}</td>`);
+  html += `</tr>`;
+
+  tfoot.innerHTML = html;
+}
+
+function renderCounts(){
+  document.getElementById('studentCountBadge').textContent = students.length;
+  document.getElementById('toolbarCount').textContent = students.length;
+}
+
+function render(){
+  renderHeader();
+  renderBody();
+  renderFoot();
+  renderCounts();
+}
+
+function autoFitInput(input){
+  const maxSize = 14, minSize = 10, step = 0.5;
+  input.style.fontSize = maxSize + 'px';
+  if(input.clientWidth === 0) return;
+  let size = maxSize;
+  while(input.scrollWidth > input.clientWidth && size > minSize){
+    size -= step;
+    input.style.fontSize = size + 'px';
+  }
+}
+
+window.addEventListener('beforeprint', ()=>{
+  document.querySelectorAll('.name-row input').forEach(autoFitInput);
+});
+window.addEventListener('afterprint', ()=>{
+  document.body.classList.remove('print-list-mode');
+  document.querySelectorAll('.name-row input').forEach(input=>{
+    input.style.fontSize = '';
+  });
+});
+
+function escapeAttr(str){
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============================================================
+   Student actions
+   ============================================================ */
+function addStudent(){
+  const s = newStudent('');
+  students.push(s);
+  saveData();
+  render();
+  setTimeout(()=>{
+    const row = document.querySelector(`tr[data-id="${s.id}"] input`);
+    if(row) row.focus();
+  }, 0);
+}
+
+function updateName(id, value){
+  const s = students.find(x=>x.id===id);
+  if(s) s.name = value;
+}
+
+function deleteStudent(id){
+  const s = students.find(x=>x.id===id);
+  const label = s && s.name ? `"${s.name}"` : 'هذا الطالب';
+  if(confirm(`هل تريد حذف ${label}؟ لا يمكن التراجع عن هذا الإجراء.`)){
+    students = students.filter(x=>x.id!==id);
+    saveData();
+    render();
+  }
+}
+
+function deleteAll(){
+  if(students.length === 0) return;
+  if(confirm('هل تريد حذف جميع الطلاب وبياناتهم؟ لا يمكن التراجع عن هذا الإجراء.')){
+    students = [];
+    saveData();
+    render();
+  }
+}
+
+function cycleState(id, domainIndex){
+  const s = students.find(x=>x.id===id);
+  if(!s) return;
+  s.domains[domainIndex] = (s.domains[domainIndex] + 1) % 3;
+  saveData();
+  render();
+}
+
+/* ============================================================
+   Excel / CSV import
+   ============================================================ */
+function handleImportFile(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type:'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[firstSheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header:1 });
+
+      let added = 0;
+      rows.forEach(row=>{
+        const raw = row && row[0] !== undefined ? String(row[0]).trim() : '';
+        if(raw){
+          students.push(newStudent(raw));
+          added++;
+        }
+      });
+
+      saveData();
+      render();
+      alert(added > 0
+        ? `تم استيراد ${added} طالب/طالبة بنجاح.`
+        : 'لم يتم العثور على أسماء صالحة في الملف.');
+    }catch(err){
+      console.error(err);
+      alert('حدث خطأ أثناء قراءة الملف. تأكد من أن الملف بصيغة Excel أو CSV صحيحة، وأن الأسماء موجودة في العمود الأول بدون رأس.');
+    }finally{
+      evt.target.value = '';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ============================================================
+   CSV export
+   ============================================================ */
+function stateToSymbol(state){
+  return state===1 ? '✅' : state===2 ? '❌' : '⬜';
+}
+function csvEscape(val){
+  const str = String(val ?? '');
+  if(/[",\n]/.test(str)) return '"' + str.replace(/"/g,'""') + '"';
+  return str;
+}
+function exportCSV(){
+  if(students.length === 0){ alert('لا يوجد بيانات لتصديرها.'); return; }
+  const headerRow = ['#', 'اسم الطالب', ...domainDefs.map(d=>d.title)];
+  const rows = [headerRow];
+  students.forEach((s, idx)=>{
+    rows.push([idx+1, s.name, ...s.domains.map(stateToSymbol)]);
+  });
+  const csvContent = rows.map(r=>r.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csvContent], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'جدول_التشخيص_الرياضيات.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   Modal: filter by domain
+   ============================================================ */
+function openChoiceModal(domainIndex){
+  currentModalDomain = domainIndex;
+  renderModalChoiceView();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function renderModalChoiceView(){
+  const d = domainDefs[currentModalDomain];
+  const masteredCount = students.filter(s=>s.domains[currentModalDomain]===1).length;
+  const notMasteredCount = students.filter(s=>s.domains[currentModalDomain]===2).length;
+
+  document.getElementById('modalTitle').textContent = `مجال: ${d.title}`;
+  document.getElementById('modalBody').innerHTML = `
+    <button class="choice-btn ok" onclick="renderModalListView(1)">
+      <span>✅ الطلاب المتقنون</span>
+      <span class="num">${masteredCount}</span>
+    </button>
+    <button class="choice-btn bad" onclick="renderModalListView(2)">
+      <span>❌ الطلاب غير المتقنين</span>
+      <span class="num">${notMasteredCount}</span>
+    </button>
+  `;
+}
+
+function renderModalListView(state){
+  const d = domainDefs[currentModalDomain];
+  const list = students.filter(s=>s.domains[currentModalDomain]===state);
+  const label = state===1 ? 'الطلاب المتقنون' : 'الطلاب غير المتقنين';
+  const symbol = state===1 ? '✅' : '❌';
+
+  let itemsHtml = '';
+  if(list.length === 0){
+    itemsHtml = `<div class="list-empty">لا يوجد طلاب في هذه القائمة حالياً.</div>`;
+  }else{
+    itemsHtml = `<ul class="name-list">` + list.map((s,i)=>
+      `<li><span class="idx">${i+1}.</span><span>${escapeAttr(s.name || '(بدون اسم)')}</span></li>`
+    ).join('') + `</ul>`;
+  }
+
+  document.getElementById('modalTitle').textContent = `${symbol} ${label} — ${d.title}`;
+  document.getElementById('modalBody').innerHTML = `
+    <button class="back-link" onclick="renderModalChoiceView()">→ رجوع</button>
+    ${itemsHtml}
+    <button class="modal-print-btn" onclick="printModalList('${label} — مجال ${d.title}', ${JSON.stringify(list.map(s=>s.name||'(بدون اسم)')).replace(/"/g,'&quot;')})">🖨️ طباعة القائمة</button>
+  `;
+}
+
+function printModalList(title, names){
+  document.getElementById('printListTitle').textContent = title;
+  document.getElementById('printListMeta').textContent = `عدد الأسماء: ${names.length}`;
+  const itemsEl = document.getElementById('printListItems');
+  itemsEl.innerHTML = names.length
+    ? names.map((n,i)=>`<tr><td class="col-idx">${i+1}</td><td>${escapeAttr(n)}</td></tr>`).join('')
+    : `<tr><td colspan="2" class="print-list-empty">لا يوجد أسماء</td></tr>`;
+
+  document.body.classList.add('print-list-mode');
+  window.print();
+}
+
+document.getElementById('modalOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'modalOverlay') closeModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') closeModal();
+});
+
+/* ============================================================
+   Init
+   ============================================================ */
+loadData();
+render();
+
+/* ============================================================
+   تسجيل Service Worker (جديد - PWA)
+   ============================================================ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('✅ Service Worker مسجل:', reg.scope))
+      .catch(err => console.error('❌ فشل تسجيل Service Worker:', err));
+  });
+}
+
+/* ============================================================
+   مؤشر حالة الاتصال (اختياري - للطرفية فقط)
+   ============================================================ */
+window.addEventListener('online',  () => console.log('🌐 متصل'));
+window.addEventListener('offline', () => console.log('📴 غير متصل — يعمل من الذاكرة'));
+</script>
+</body>
+</html>

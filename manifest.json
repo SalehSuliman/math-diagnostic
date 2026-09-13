@@ -1,0 +1,27 @@
+{
+  "name": "جدول التشخيص - الرياضيات - الثالث متوسط",
+  "short_name": "تشخيص الرياضيات",
+  "description": "تطبيق جدول التشخيص لمادة الرياضيات للصف الثالث متوسط - الفصل الدراسي الأول",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F1F3F6",
+  "theme_color": "#15304C",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
