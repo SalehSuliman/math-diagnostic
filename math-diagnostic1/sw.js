@@ -1,4 +1,4 @@
-const CACHE_NAME = 'math-diagnostic3-v1';
+const CACHE_NAME = 'math-diagnostic1-v1';
 const CORE_ASSETS = [
   './', './index.html', './manifest.json',
   './icon-192.png', './icon-512.png'

@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>جدول التشخيص - مادة الرياضيات - الصف الثالث متوسط</title>
+<title>جدول التشخيص - مادة الرياضيات - الصف الأول متوسط</title>
 
 <meta name="theme-color" content="#15304C">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="تشخيص ثالث متوسط">
+<meta name="apple-mobile-web-app-title" content="تشخيص أول متوسط">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -390,8 +390,8 @@
       <span class="lbl">عدد الطلاب</span>
     </div>
     <h1>جدول التشخيص لمادة الرياضيات</h1>
-    <p class="sub">الصف الثالث متوسط - الفصل الدراسي الأول</p>
-    <p class="goal">تحديد مدى استعداد الطلاب لدراسة الصف الثالث متوسط</p>
+    <p class="sub">الصف الأول متوسط - الفصل الدراسي الأول</p>
+    <p class="goal">تحديد مدى استعداد الطلاب لمادة الرياضيات</p>
   </div>
 
   <div class="toolbar">
@@ -442,7 +442,7 @@
 
 <div id="printListArea">
   <div class="print-list-banner">
-    <p class="print-list-eyebrow">جدول التشخيص لمادة الرياضيات — الصف الثالث متوسط — الفصل الدراسي الأول</p>
+    <p class="print-list-eyebrow">جدول التشخيص لمادة الرياضيات — الصف الأول متوسط — الفصل الدراسي الأول</p>
     <h2 id="printListTitle"></h2>
     <p class="meta" id="printListMeta"></p>
   </div>
@@ -462,14 +462,14 @@ if (navigator.storage && navigator.storage.persist) {
   navigator.storage.persist().catch(() => {});
 }
 
-const STORAGE_KEY = 'math_diagnostic_g3_t1_v1';
+const STORAGE_KEY = 'math_diagnostic_g1_t1_v1';
 
 const domainDefs = [
   { icon:'🔢', label:'الأعداد<br>والعمليات عليها', title:'الأعداد والعمليات عليها' },
   { icon:'🧮', label:'الكسور الاعتيادية<br>والعشرية', title:'الكسور الاعتيادية والعشرية' },
-  { icon:'✖️', label:'الجبر<br>والمعادلات', title:'الجبر والمعادلات' },
-  { icon:'📈', label:'الدوال<br>والمتباينات', title:'الدوال والمتباينات' },
-  { icon:'📐', label:'الهندسة<br>والقياس', title:'الهندسة والقياس' },
+  { icon:'٪',  label:'النسبة المئوية<br>والتناسب', title:'النسبة المئوية والتناسب' },
+  { icon:'📐', label:'الجبر<br>والأنماط', title:'الجبر والأنماط' },
+  { icon:'📏', label:'الهندسة<br>والقياس', title:'الهندسة والقياس' },
   { icon:'📊', label:'الإحصاء<br>والاحتمال', title:'الإحصاء والاحتمال' }
 ];
 
