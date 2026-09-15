@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="المهام الأدائية">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f3d3e"/>
+      <stop offset="1" stop-color="#14585a"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <rect x="13" y="13" width="38" height="38" rx="6" fill="#f0f6f4"/>
+  <g fill="#cddbd7">
+    <rect x="18" y="20.5" width="18" height="2.6" rx="1.3"/>
+    <rect x="18" y="30.7" width="18" height="2.6" rx="1.3"/>
+    <rect x="18" y="40.9" width="18" height="2.6" rx="1.3"/>
+  </g>
+  <g fill="none" stroke="#f0f6f4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="38.5" y="18" width="8.5" height="8.5" rx="2.2" fill="#1f9d55" stroke="none"/>
+    <path d="M40.6 22.3l1.7 1.8 3-3.3"/>
+    <rect x="38.5" y="28.2" width="8.5" height="8.5" rx="2.2" fill="#d69e00" stroke="none"/>
+    <path d="M40.6 32.5l1.7 1.8 3-3.3"/>
+    <rect x="38.5" y="38.4" width="8.5" height="8.5" rx="2.2" fill="#c62828" stroke="none"/>
+    <path d="M40.6 42.7l1.7 1.8 3-3.3"/>
+  </g>
+</svg>
