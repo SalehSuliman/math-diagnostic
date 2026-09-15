@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>المهام الأدائية</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f3d3e">
+<meta name="description" content="متابعة المهام الأدائية للطلاب في الفصول 3-1 و 3-2 و 3-3، تعمل بدون إنترنت وتحفظ البيانات داخل الجهاز.">
+
+<!-- أيقونات -->
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+<!-- دعم التثبيت على iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="المهام الأدائية">
+
+<style>
+/* ============================================================
+   نظام الألوان والمتغيرات
+   ============================================================ */
+:root{
+  --bg:#eef1ef;
+  --surface:#ffffff;
+  --ink:#16221f;
+  --ink-soft:#5b6b66;
+  --line:#d6dedb;
+  --brand:#0f3d3e;
+  --brand-2:#14585a;
+  --ok:#1f9d55;
+  --ok-bg:#d9f2e3;
+  --warn:#d69e00;
+  --warn-bg:#fdf1cf;
+  --bad:#c62828;
+  --bad-bg:#fbdcdc;
+  --focus:#0aa1a6;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(15,61,62,.08), 0 8px 24px rgba(15,61,62,.06);
+  --cell:44px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0d1513;
+    --surface:#13201d;
+    --ink:#e7efec;
+    --ink-soft:#9bb0aa;
+    --line:#274039;
+    --brand:#0c2f30;
+    --brand-2:#12494b;
+    --ok-bg:#12381f;
+    --warn-bg:#3a2e07;
+    --bad-bg:#3b1414;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Segoe UI","Noto Kufi Arabic","Noto Sans Arabic",Tahoma,"Dubai",system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-text-size-adjust:100%;
+  overscroll-behavior-y:contain;
+}
+button{font-family:inherit;font-size:1rem;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+
+/* ============================================================
+   الرأس
+   ============================================================ */
+header.app{
+  background:linear-gradient(135deg,var(--brand),var(--brand-2));
+  color:#eaf6f4;
+  padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;
+  position:sticky;top:0;z-index:40;
+}
+.app-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+.app-title{margin:0;font-size:1.25rem;font-weight:700;letter-spacing:.2px;flex:1 1 auto;min-width:200px}
+.app-title span{font-weight:400;opacity:.85}
+.chip-count{
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+  padding:4px 12px;border-radius:999px;font-size:.85rem;white-space:nowrap;
+}
+#btnInstall{
+  display:none;background:#ffffff;color:var(--brand);border:0;
+  padding:8px 14px;border-radius:999px;font-weight:700;
+}
+
+/* اختيار الفصل */
+.classes{display:flex;gap:8px;max-width:1200px;margin:12px auto 0}
+.class-tab{
+  flex:1;background:rgba(255,255,255,.10);color:#eaf6f4;
+  border:1px solid rgba(255,255,255,.25);padding:10px 4px;border-radius:10px;
+  font-weight:700;font-size:1.05rem;transition:background .15s,transform .1s;
+}
+.class-tab small{display:block;font-weight:400;font-size:.72rem;opacity:.8}
+.class-tab[aria-selected="true"]{background:#fff;color:var(--brand);border-color:#fff}
+.class-tab:active{transform:scale(.98)}
+
+/* ============================================================
+   شريط الأدوات
+   ============================================================ */
+.toolbar{
+  max-width:1200px;margin:0 auto;padding:12px 16px 4px;
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.btn{
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);
+  padding:9px 14px;border-radius:10px;font-weight:600;box-shadow:var(--shadow);
+  display:inline-flex;align-items:center;gap:7px;transition:transform .1s;
+}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-primary{background:var(--brand);color:#eaf6f4;border-color:var(--brand)}
+.btn-danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,var(--line))}
+.btn-ghost{background:transparent;box-shadow:none}
+
+/* دليل الألوان */
+.legend{
+  max-width:1200px;margin:0 auto;padding:6px 16px 0;
+  display:flex;gap:14px;flex-wrap:wrap;color:var(--ink-soft);font-size:.82rem;
+}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-left:5px}
+
+/* ============================================================
+   الجدول
+   ============================================================ */
+main{max-width:1200px;margin:0 auto;padding:12px 16px 40px}
+.table-wrap{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:auto;max-height:calc(100vh - 250px);
+}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:760px}
+thead th{
+  position:sticky;top:0;z-index:20;background:var(--surface);
+  border-bottom:2px solid var(--line);padding:10px 6px;font-size:.9rem;white-space:nowrap;
+}
+th.col-idx,td.col-idx{
+  position:sticky;inset-inline-start:0;z-index:15;background:var(--surface);
+  width:46px;min-width:46px;text-align:center;color:var(--ink-soft);font-size:.85rem;
+  border-inline-end:1px solid var(--line);
+}
+thead th.col-idx{z-index:25}
+th.col-name,td.col-name{
+  position:sticky;inset-inline-start:46px;z-index:15;background:var(--surface);
+  min-width:230px;max-width:300px;text-align:start;padding-inline:10px;
+  border-inline-end:2px solid var(--line);
+}
+thead th.col-name{z-index:25}
+td.col-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--line) 22%,var(--surface))}
+tbody td{border-bottom:1px solid var(--line);padding:4px;text-align:center}
+tbody tr:last-child td{border-bottom:0}
+
+/* خلية المهمة */
+.mark{
+  width:var(--cell);height:var(--cell);border-radius:9px;border:1px solid var(--line);
+  background:transparent;display:inline-flex;align-items:center;justify-content:center;
+  font-size:1.2rem;font-weight:700;line-height:1;color:transparent;
+  transition:background .12s,color .12s,border-color .12s;
+}
+.mark[data-v="1"]{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.mark[data-v="2"]{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.mark[data-v="3"]{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.mark:active{transform:scale(.93)}
+
+.row-edit{
+  background:transparent;border:0;color:var(--ink-soft);padding:6px;border-radius:8px;font-size:1.05rem;
+}
+.row-edit:hover{background:color-mix(in srgb,var(--line) 45%,transparent);color:var(--ink)}
+
+/* الحالة الفارغة */
+.empty{padding:48px 20px;text-align:center;color:var(--ink-soft)}
+.empty h2{color:var(--ink);font-size:1.1rem;margin:0 0 6px}
+.empty p{margin:0 0 18px}
+
+/* ============================================================
+   النوافذ المنبثقة
+   ============================================================ */
+dialog{
+  border:0;border-radius:16px;padding:0;width:min(440px,92vw);
+  background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+dialog::backdrop{background:rgba(9,20,18,.55);backdrop-filter:blur(2px)}
+.dlg-head{padding:16px 18px 0;font-weight:700;font-size:1.05rem}
+.dlg-body{padding:12px 18px}
+.dlg-foot{padding:12px 18px 18px;display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap}
+label.field{display:block;margin:10px 0}
+label.field span{display:block;font-size:.85rem;color:var(--ink-soft);margin-bottom:5px}
+input[type=text],select{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);color:var(--ink);font-family:inherit;font-size:1rem;
+}
+.radio-row{display:flex;gap:8px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer}
+.radio-row input{accent-color:var(--brand);width:18px;height:18px}
+
+/* تنبيه صغير */
+#toast{
+  position:fixed;inset-inline:0;bottom:24px;margin:auto;width:max-content;max-width:90vw;
+  background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;
+  font-size:.9rem;opacity:0;transform:translateY(12px);pointer-events:none;transition:.22s;z-index:99;
+}
+#toast.show{opacity:1;transform:translateY(0)}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (max-width:520px){
+  :root{--cell:40px}
+  .app-title{font-size:1.1rem}
+  .btn{padding:8px 11px;font-size:.9rem}
+  th.col-name,td.col-name{min-width:200px}
+  .table-wrap{max-height:calc(100vh - 290px)}
+}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="app-row">
+    <h1 class="app-title">المهام الأدائية <span id="titleClass">3-1</span></h1>
+    <span class="chip-count" id="count">0 طالب</span>
+    <button id="btnInstall" type="button">تثبيت التطبيق</button>
+  </div>
+
+  <div class="classes" role="tablist" aria-label="اختيار الفصل">
+    <button class="class-tab" role="tab" data-class="3-1" aria-selected="true">3-1<small id="c-3-1">0</small></button>
+    <button class="class-tab" role="tab" data-class="3-2" aria-selected="false">3-2<small id="c-3-2">0</small></button>
+    <button class="class-tab" role="tab" data-class="3-3" aria-selected="false">3-3<small id="c-3-3">0</small></button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button class="btn btn-primary" id="btnImportCsv" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    استيراد أسماء CSV
+  </button>
+  <button class="btn" id="btnAdd" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    إضافة طالب
+  </button>
+  <button class="btn" id="btnExport" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m0 0-4 4m4-4 4 4M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg>
+    تصدير نسخة JSON
+  </button>
+  <button class="btn" id="btnImportJson" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    استيراد نسخة JSON
+  </button>
+  <button class="btn btn-danger" id="btnClear" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg>
+    حذف الكل
+  </button>
+</div>
+
+<div class="legend">
+  <span><i style="background:var(--ok-bg);border:1px solid var(--ok)"></i>أنجز المهمة</span>
+  <span><i style="background:var(--warn-bg);border:1px solid var(--warn)"></i>أنجزها جزئيًا</span>
+  <span><i style="background:var(--bad-bg);border:1px solid var(--bad)"></i>لم ينجزها</span>
+  <span><i style="border:1px solid var(--line)"></i>لم تُرصد بعد</span>
+</div>
+
+<main>
+  <div class="table-wrap" id="tableWrap">
+    <table id="grid">
+      <thead><tr id="headRow"></tr></thead>
+      <tbody id="body"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="empty" hidden>
+    <h2>لا توجد أسماء في هذا الفصل</h2>
+    <p>استورد ملف CSV يحتوي على الأسماء سطرًا بسطر، أو أضف طالبًا يدويًا.</p>
+    <button class="btn btn-primary" id="emptyImport" type="button">استيراد أسماء CSV</button>
+  </div>
+</main>
+
+<!-- مدخلات ملفات مخفية -->
+<input type="file" id="fileCsv" accept=".csv,.txt,text/csv,text/plain" hidden>
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
+
+<!-- نافذة إضافة طالب -->
+<dialog id="dlgAdd">
+  <div class="dlg-head">إضافة طالب</div>
+  <div class="dlg-body">
+    <label class="field"><span>اسم الطالب</span>
+      <input type="text" id="addName" placeholder="مثال: محمد بن عبدالله بن سالم" autocomplete="off">
+    </label>
+    <label class="field"><span>الفصل</span>
+      <select id="addClass"></select>
+    </label>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn btn-primary" id="addSave" type="button">إضافة</button>
+    <button class="btn btn-ghost" data-close type="button">إلغاء</button>
+  </div>
+</dialog>
+
+<!-- نافذة تعديل طالب -->
+<dialog id="dlgEdit">
+  <div class="dlg-head">تعديل بيانات الطالب</div>
+  <div class="dlg-body">
+    <label class="field"><span>الاسم</span>
+      <input type="text" id="editName" autocomplete="off">
+    </label>
+    <label class="field"><span>نقل إلى فصل (تنتقل معه كل درجاته)</span>
+      <select id="editClass"></select>
+    </label>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn btn-primary" id="editSave" type="button">حفظ التعديل</button>
+    <button class="btn btn-danger" id="editDelete" type="button">حذف الطالب</button>
+    <button class="btn btn-ghost" data-close type="button">إلغاء</button>
+  </div>
+</dialog>
+
+<!-- نافذة الحذف -->
+<dialog id="dlgClear">
+  <div class="dlg-head">حذف الكل</div>
+  <div class="dlg-body">
+    <p style="margin:6px 0 12px;color:var(--ink-soft)">اختر نطاق الحذف. لا يمكن التراجع بعد التأكيد.</p>
+    <label class="radio-row"><input type="radio" name="clearScope" value="current" checked><span>أسماء ودرجات الفصل الحالي فقط</span></label>
+    <label class="radio-row"><input type="radio" name="clearScope" value="marks"><span>درجات الفصل الحالي فقط (الإبقاء على الأسماء)</span></label>
+    <label class="radio-row"><input type="radio" name="clearScope" value="all"><span>جميع الفصول الثلاثة</span></label>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn btn-danger" id="clearGo" type="button">تأكيد الحذف</button>
+    <button class="btn btn-ghost" data-close type="button">إلغاء</button>
+  </div>
+</dialog>
+
+<!-- نافذة استيراد CSV -->
+<dialog id="dlgCsv">
+  <div class="dlg-head">استيراد الأسماء</div>
+  <div class="dlg-body">
+    <p style="margin:6px 0 12px;color:var(--ink-soft)">الأسماء ستُضاف إلى الفصل <b id="csvClass"></b>. تُزال علامات التنصيص تلقائيًا.</p>
+    <label class="radio-row"><input type="radio" name="csvMode" value="append" checked><span>إضافة إلى الأسماء الحالية</span></label>
+    <label class="radio-row"><input type="radio" name="csvMode" value="replace"><span>استبدال أسماء الفصل بالكامل</span></label>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn btn-primary" id="csvPick" type="button">اختيار ملف CSV</button>
+    <button class="btn btn-ghost" data-close type="button">إلغاء</button>
+  </div>
+</dialog>
+
+<!-- نافذة استيراد JSON -->
+<dialog id="dlgJson">
+  <div class="dlg-head">استيراد نسخة JSON</div>
+  <div class="dlg-body">
+    <p style="margin:6px 0 12px;color:var(--ink-soft)">اختر طريقة الدمج مع البيانات الحالية.</p>
+    <label class="radio-row"><input type="radio" name="jsonMode" value="replace" checked><span>استبدال كل البيانات بالملف المستورد</span></label>
+    <label class="radio-row"><input type="radio" name="jsonMode" value="merge"><span>دمج: إضافة الأسماء غير الموجودة فقط</span></label>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn btn-primary" id="jsonPick" type="button">اختيار ملف JSON</button>
+    <button class="btn btn-ghost" data-close type="button">إلغاء</button>
+  </div>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ============================================================
+   1) الثوابت والحالة
+   ============================================================ */
+const CLASSES = ['3-1','3-2','3-3'];   // فصول ثابتة لا تتغير
+const TASKS   = 12;                    // م1 .. م12
+const KEY     = 'perf-tasks-v1';       // مفتاح التخزين المحلي
+
+let state   = load();
+let current = localStorage.getItem(KEY + ':last') || CLASSES[0];
+// اختصارات التطبيق: index.html?c=3-2 تفتح الفصل مباشرة
+const fromUrl = new URLSearchParams(location.search).get('c');
+if (fromUrl && CLASSES.includes(fromUrl)) current = fromUrl;
+if (!CLASSES.includes(current)) current = CLASSES[0];
+
+/* بنية البيانات:
+   { version:1, classes:{ "3-1":[{id,name,m:[0..3]x12}], "3-2":[], "3-3":[] } } */
+function emptyState(){
+  const c = {}; CLASSES.forEach(k => c[k] = []);
+  return { version:1, classes:c };
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return emptyState();
+    const data = JSON.parse(raw);
+    return normalize(data);
+  }catch(e){ console.warn('تعذّرت قراءة البيانات المحفوظة', e); return emptyState(); }
+}
+function normalize(data){
+  const out = emptyState();
+  if (!data || typeof data !== 'object') return out;
+  const src = data.classes && typeof data.classes === 'object' ? data.classes : data;
+  CLASSES.forEach(k => {
+    const arr = Array.isArray(src[k]) ? src[k] : [];
+    out.classes[k] = arr.map(s => ({
+      id:   String(s && s.id ? s.id : uid()),
+      name: String(s && s.name ? s.name : '').trim(),
+      m:    fixMarks(s && s.m)
+    })).filter(s => s.name);
+  });
+  return out;
+}
+function fixMarks(m){
+  const a = Array.isArray(m) ? m.slice(0, TASKS) : [];
+  while (a.length < TASKS) a.push(0);
+  return a.map(v => { v = Number(v); return (v === 1 || v === 2 || v === 3) ? v : 0; });
+}
+function save(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify(state));
+    localStorage.setItem(KEY + ':last', current);
+  }catch(e){ toast('تعذّر الحفظ: مساحة التخزين ممتلئة'); }
+}
+function uid(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+const list = () => state.classes[current];
+
+/* ============================================================
+   2) بناء الواجهة
+   ============================================================ */
+const $ = sel => document.querySelector(sel);
+const headRow = $('#headRow'), tbody = $('#body');
+
+(function buildHead(){
+  let html = '<th class="col-idx">#</th><th class="col-name">الاسم</th>';
+  for (let i = 1; i <= TASKS; i++) html += `<th>م${i}</th>`;
+  html += '<th>تعديل</th>';
+  headRow.innerHTML = html;
+})();
+
+function render(){
+  $('#titleClass').textContent = current;
+  document.title = 'المهام الأدائية ' + current;
+  document.querySelectorAll('.class-tab').forEach(b =>
+    b.setAttribute('aria-selected', String(b.dataset.class === current)));
+  CLASSES.forEach(k => $('#c-' + k).textContent = state.classes[k].length + ' طالب');
+
+  const rows = list();
+  $('#count').textContent = rows.length + ' طالب';
+  $('#empty').hidden = rows.length > 0;
+  $('#tableWrap').hidden = rows.length === 0;
+
+  const frag = document.createDocumentFragment();
+  rows.forEach((s, i) => {
+    const tr = document.createElement('tr');
+    tr.dataset.id = s.id;
+
+    const tdIdx = document.createElement('td');
+    tdIdx.className = 'col-idx'; tdIdx.textContent = i + 1;
+
+    const tdName = document.createElement('td');
+    tdName.className = 'col-name'; tdName.textContent = s.name; tdName.title = s.name;
+
+    tr.append(tdIdx, tdName);
+
+    for (let t = 0; t < TASKS; t++){
+      const td = document.createElement('td');
+      const b  = document.createElement('button');
+      b.type = 'button'; b.className = 'mark';
+      b.dataset.v = s.m[t]; b.dataset.t = t;
+      b.textContent = '✓';
+      b.setAttribute('aria-label', `${s.name} — المهمة ${t+1}`);
+      td.appendChild(b); tr.appendChild(td);
+    }
+
+    const tdE = document.createElement('td');
+    const e = document.createElement('button');
+    e.type = 'button'; e.className = 'row-edit'; e.dataset.edit = '1';
+    e.textContent = '✎'; e.setAttribute('aria-label', 'تعديل ' + s.name);
+    tdE.appendChild(e); tr.appendChild(tdE);
+
+    frag.appendChild(tr);
+  });
+  tbody.replaceChildren(frag);
+}
+
+/* ============================================================
+   3) دورة ألوان المهمة: فارغ → أخضر → أصفر → أحمر → فارغ
+   ============================================================ */
+tbody.addEventListener('click', ev => {
+  const mark = ev.target.closest('.mark');
+  if (mark){
+    const id = mark.closest('tr').dataset.id;
+    const st = list().find(s => s.id === id);
+    if (!st) return;
+    const t = Number(mark.dataset.t);
+    st.m[t] = (st.m[t] + 1) % 4;
+    mark.dataset.v = st.m[t];
+    save();
+    return;
+  }
+  const edit = ev.target.closest('[data-edit]');
+  if (edit) openEdit(edit.closest('tr').dataset.id);
+});
+
+/* تبديل الفصل */
+document.querySelectorAll('.class-tab').forEach(btn => {
+  btn.addEventListener('click', () => { current = btn.dataset.class; save(); render(); });
+});
+
+/* ============================================================
+   4) استيراد الأسماء من CSV
+   ============================================================ */
+function parseNames(text){
+  text = text.replace(/^\uFEFF/, '');                 // إزالة BOM
+  const out = [];
+  text.split(/\r\n|\r|\n/).forEach(line => {
+    if (!line.trim()) return;
+    // أخذ أول حقل في السطر مع احترام علامات التنصيص
+    let name = line.trim();
+    const m = name.match(/^\s*"((?:[^"]|"")*)"/);     // حقل بين تنصيص
+    if (m) name = m[1].replace(/""/g, '"');
+    else   name = name.split(/[,;\t]/)[0];            // أول حقل قبل الفاصل
+    name = name.replace(/^["'\u201C\u201D\u2018\u2019]+|["'\u201C\u201D\u2018\u2019]+$/g, '')
+               .replace(/\s+/g, ' ').trim();
+    if (!name) return;
+    if (/^(الاسم|اسم الطالب|name|student)$/i.test(name)) return;  // تجاهل سطر العناوين
+    out.push(name);
+  });
+  return out;
+}
+
+$('#btnImportCsv').addEventListener('click', openCsvDialog);
+$('#emptyImport').addEventListener('click', openCsvDialog);
+function openCsvDialog(){ $('#csvClass').textContent = current; $('#dlgCsv').showModal(); }
+
+$('#csvPick').addEventListener('click', () => { $('#fileCsv').value = ''; $('#fileCsv').click(); });
+
+$('#fileCsv').addEventListener('change', async ev => {
+  const file = ev.target.files[0]; if (!file) return;
+  const mode = document.querySelector('input[name=csvMode]:checked').value;
+  try{
+    let text = await file.text();
+    if (/\uFFFD/.test(text)){                          // ملف بترميز غير UTF-8 (Windows-1256)
+      const buf = await file.arrayBuffer();
+      try{ text = new TextDecoder('windows-1256').decode(buf); }catch(e){}
+    }
+    const names = parseNames(text);
+    if (!names.length){ toast('لم يُعثر على أسماء في الملف'); return; }
+    if (mode === 'replace') state.classes[current] = [];
+    const exists = new Set(list().map(s => s.name));
+    let added = 0, skipped = 0;
+    names.forEach(n => {
+      if (exists.has(n)){ skipped++; return; }
+      exists.add(n);
+      list().push({ id: uid(), name: n, m: fixMarks([]) });
+      added++;
+    });
+    save(); render(); $('#dlgCsv').close();
+    toast(`أُضيف ${added} اسمًا` + (skipped ? ` وتم تجاهل ${skipped} مكررًا` : ''));
+  }catch(e){ toast('تعذّرت قراءة الملف'); }
+});
+
+/* ============================================================
+   5) إضافة وتعديل ونقل وحذف طالب
+   ============================================================ */
+function fillClassSelect(el, selected){
+  el.innerHTML = CLASSES.map(c => `<option value="${c}">${c}</option>`).join('');
+  el.value = selected;
+}
+
+$('#btnAdd').addEventListener('click', () => {
+  $('#addName').value = '';
+  fillClassSelect($('#addClass'), current);
+  $('#dlgAdd').showModal();
+  setTimeout(() => $('#addName').focus(), 50);
+});
+$('#addSave').addEventListener('click', addStudent);
+$('#addName').addEventListener('keydown', e => { if (e.key === 'Enter') addStudent(); });
+
+function addStudent(){
+  const name = $('#addName').value.replace(/\s+/g, ' ').trim();
+  if (!name){ $('#addName').focus(); toast('اكتب اسم الطالب أولًا'); return; }
+  const cls = $('#addClass').value;
+  state.classes[cls].push({ id: uid(), name, m: fixMarks([]) });
+  if (cls !== current) current = cls;
+  save(); render(); $('#dlgAdd').close();
+  toast('أُضيف الطالب إلى الفصل ' + cls);
+}
+
+let editingId = null;
+function openEdit(id){
+  const s = list().find(x => x.id === id); if (!s) return;
+  editingId = id;
+  $('#editName').value = s.name;
+  fillClassSelect($('#editClass'), current);
+  $('#dlgEdit').showModal();
+}
+$('#editSave').addEventListener('click', () => {
+  const s = list().find(x => x.id === editingId); if (!s) return;
+  const name = $('#editName').value.replace(/\s+/g, ' ').trim();
+  if (!name){ toast('الاسم لا يمكن أن يكون فارغًا'); return; }
+  s.name = name;
+  const target = $('#editClass').value;
+  if (target !== current){                       // النقل مع الاحتفاظ بالدرجات
+    state.classes[current] = list().filter(x => x.id !== editingId);
+    state.classes[target].push(s);
+    save(); render(); $('#dlgEdit').close();
+    toast('نُقل الطالب إلى الفصل ' + target + ' بدرجاته');
+    return;
+  }
+  save(); render(); $('#dlgEdit').close(); toast('حُفظ التعديل');
+});
+$('#editDelete').addEventListener('click', () => {
+  const s = list().find(x => x.id === editingId); if (!s) return;
+  if (!confirm('حذف «' + s.name + '» نهائيًا من الفصل ' + current + '؟')) return;
+  state.classes[current] = list().filter(x => x.id !== editingId);
+  save(); render(); $('#dlgEdit').close(); toast('حُذف الطالب');
+});
+
+/* ============================================================
+   6) حذف الكل
+   ============================================================ */
+$('#btnClear').addEventListener('click', () => $('#dlgClear').showModal());
+$('#clearGo').addEventListener('click', () => {
+  const scope = document.querySelector('input[name=clearScope]:checked').value;
+  if (scope === 'current')      state.classes[current] = [];
+  else if (scope === 'marks')   list().forEach(s => s.m = fixMarks([]));
+  else                          CLASSES.forEach(c => state.classes[c] = []);
+  save(); render(); $('#dlgClear').close();
+  toast(scope === 'all' ? 'حُذفت بيانات الفصول الثلاثة' : 'تم الحذف');
+});
+
+/* ============================================================
+   7) تصدير واستيراد JSON
+   ============================================================ */
+$('#btnExport').addEventListener('click', () => {
+  const payload = {
+    app:'performance-tasks', version:1,
+    exportedAt: new Date().toISOString(),
+    tasks: TASKS, classes: state.classes
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `المهام-الأدائية-${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast('صُدّرت نسخة كاملة من البيانات');
+});
+
+$('#btnImportJson').addEventListener('click', () => $('#dlgJson').showModal());
+$('#jsonPick').addEventListener('click', () => { $('#fileJson').value = ''; $('#fileJson').click(); });
+
+$('#fileJson').addEventListener('change', async ev => {
+  const file = ev.target.files[0]; if (!file) return;
+  const mode = document.querySelector('input[name=jsonMode]:checked').value;
+  try{
+    const data = normalize(JSON.parse(await file.text()));
+    if (mode === 'replace'){
+      state = data;
+    }else{
+      CLASSES.forEach(c => {
+        const names = new Set(state.classes[c].map(s => s.name));
+        data.classes[c].forEach(s => {
+          if (names.has(s.name)) return;
+          names.add(s.name);
+          state.classes[c].push({ id: uid(), name: s.name, m: fixMarks(s.m) });
+        });
+      });
+    }
+    save(); render(); $('#dlgJson').close();
+    toast('اكتمل الاستيراد');
+  }catch(e){ toast('الملف غير صالح أو تالف'); }
+});
+
+/* ============================================================
+   8) أدوات مساعدة: النوافذ والتنبيهات
+   ============================================================ */
+document.querySelectorAll('dialog [data-close]').forEach(b =>
+  b.addEventListener('click', () => b.closest('dialog').close()));
+
+let toastTimer;
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ============================================================
+   9) التثبيت وService Worker
+   ============================================================ */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e; $('#btnInstall').style.display = 'inline-block';
+});
+$('#btnInstall').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt(); await deferredPrompt.userChoice;
+  deferredPrompt = null; $('#btnInstall').style.display = 'none';
+});
+window.addEventListener('appinstalled', () => { $('#btnInstall').style.display = 'none'; });
+
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW', err));
+  });
+}
+
+render();
+</script>
+</body>
+</html>
