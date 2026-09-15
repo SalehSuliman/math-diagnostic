@@ -1,0 +1,34 @@
+{
+  "name": "المهام الأدائية",
+  "short_name": "المهام",
+  "description": "متابعة المهام الأدائية للطلاب في الفصول 3-1 و 3-2 و 3-3، تعمل بدون إنترنت والبيانات محفوظة داخل الجهاز.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./index.html",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#eef1ef",
+  "theme_color": "#0f3d3e",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "فصل 3-1", "short_name": "3-1", "url": "./index.html?c=3-1", "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }] },
+    { "name": "فصل 3-2", "short_name": "3-2", "url": "./index.html?c=3-2", "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }] },
+    { "name": "فصل 3-3", "short_name": "3-3", "url": "./index.html?c=3-3", "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }] }
+  ]
+}
