@@ -36,7 +36,6 @@
             
             <!-- أدوات عامة -->
             <div class="flex flex-wrap gap-2">
-                <!-- زر التثبيت (يظهر تلقائياً عند توفر الشروط أو يدعم التثبيت المباشر) -->
                 <button id="installAppBtn" onclick="installApp()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow transition hidden items-center gap-2">
                     <i class="fa-solid fa-download"></i> تثبيت التطبيق
                 </button>
@@ -125,7 +124,6 @@
                         <i class="fa-solid fa-list-check text-blue-600"></i> سجلات المتابعة المسجلة
                     </h2>
                     
-                    <!-- أزرار الطباعة والتصفية للطباعة -->
                     <div class="flex flex-wrap gap-2 items-center">
                         <select id="printFilterType" class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs outline-none">
                             <option value="all">كل السجلات للطباعة</option>
@@ -144,7 +142,6 @@
                     </div>
                 </div>
 
-                <!-- أدوات الفلترة والبحث المباشر -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3 no-print">
                     <div>
                         <select id="filterClass" onchange="renderTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500">
@@ -172,7 +169,6 @@
                     </div>
                 </div>
 
-                <!-- جدول عرض السجلات -->
                 <div class="overflow-x-auto rounded-xl border border-slate-100">
                     <table class="w-full text-right text-xs">
                         <thead class="bg-slate-100 text-slate-700 uppercase font-semibold">
@@ -187,7 +183,6 @@
                             </tr>
                         </thead>
                         <tbody id="recordsTableBody" class="divide-y divide-slate-100">
-                            <!-- يتم تعبئتها ديناميكياً -->
                         </tbody>
                     </table>
                 </div>
@@ -197,9 +192,9 @@
 
     </div>
 
-    <!-- نافذة إدارة الفصول وإدارة طلابها -->
+    <!-- نافذة إدارة الفصول والطلاب -->
     <div id="classModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 no-print">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-xl space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <i class="fa-solid fa-school text-indigo-600"></i> إدارة الفصول والطلاب
             </h3>
@@ -209,13 +204,33 @@
                 <button onclick="addClass()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow transition whitespace-nowrap">إضافة فصل</button>
             </div>
 
-            <!-- عرض الفصول مع إمكانية عرض وحذف طلابها الحاليين -->
             <div class="space-y-3" id="classListContainer">
-                <!-- يتم تعبئتها ديناميكياً -->
             </div>
 
             <div class="flex justify-end pt-2">
                 <button onclick="closeClassModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة نقل طالب إلى فصل آخر -->
+    <div id="moveStudentModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 no-print">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-right-left text-amber-600"></i> نقل طالب إلى فصل آخر
+            </h3>
+            <p id="moveStudentInfo" class="text-xs text-slate-500 font-semibold"></p>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">اختر الفصل المنقول إليه:</label>
+                <select id="targetMoveClass" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                    <option value="">-- اختر الفصل --</option>
+                </select>
+            </div>
+            <input type="hidden" id="moveOldClass">
+            <input type="hidden" id="moveStudentName">
+            <div class="flex gap-2 justify-end pt-2">
+                <button onclick="closeMoveStudentModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition">إلغاء</button>
+                <button onclick="confirmMoveStudent()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow transition">تأكيد النقل وتحديث السجلات</button>
             </div>
         </div>
     </div>
@@ -266,7 +281,7 @@
         </div>
     </div>
 
-    <!-- كود الجافاسكريبت وبرمجية الـ PWA -->
+    <!-- كود الجافاسكريبت والتشغيل بدون إنترنت -->
     <script>
         let classes = JSON.parse(localStorage.getItem('tracker_classes')) || [];
         let students = JSON.parse(localStorage.getItem('tracker_students')) || {};
@@ -294,13 +309,24 @@
             }
         }
 
-        // تسجيل Service Worker لتمكين متصفح كروم من تفعيل خصائص التطبيق الذكي
+        // Service Worker محسن بالكامل ليعمل التطبيق بدون انترنت نهائياً (Cache-First)
         if ('serviceWorker' in navigator) {
             const swCode = `
-                self.addEventListener('fetch', function(event) {
-                    event.respondWith(fetch(event.request).catch(function() {
-                        return caches.match(event.request);
-                    }));
+                const CACHE_NAME = 'student-tracker-v1';
+                self.addEventListener('install', (e) => {
+                    self.skipWaiting();
+                });
+                self.addEventListener('activate', (e) => {
+                    e.waitUntil(clients.claim());
+                });
+                self.addEventListener('fetch', (e) => {
+                    e.respondWith(
+                        fetch(e.request).catch(() => {
+                            return caches.match(e.request).then(response => {
+                                return response || caches.match('./');
+                            });
+                        })
+                    );
                 });
             `;
             const blob = new Blob([swCode], { type: 'text/javascript' });
@@ -315,7 +341,7 @@
             renderTable();
         };
 
-        // إدارة الفصول
+        // إدارة الفصول والطلاب
         function openClassModal() {
             renderClassList();
             document.getElementById('classModal').classList.remove('hidden');
@@ -361,6 +387,66 @@
             }
         }
 
+        // نقل طالب لفصل آخر وتحديث سجلاته
+        function openMoveStudentModal(className, studentName) {
+            document.getElementById('moveOldClass').value = className;
+            document.getElementById('moveStudentName').value = studentName;
+            document.getElementById('moveStudentInfo').textContent = `نقل الطالب: "${studentName}" من فصل "${className}"`;
+            
+            const targetSelect = document.getElementById('targetMoveClass');
+            targetSelect.innerHTML = '<option value="">-- اختر الفصل الجديد --</option>';
+            classes.forEach(c => {
+                if(c !== className) {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    targetSelect.appendChild(opt);
+                }
+            });
+
+            document.getElementById('moveStudentModal').classList.remove('hidden');
+        }
+
+        function closeMoveStudentModal() {
+            document.getElementById('moveStudentModal').classList.add('hidden');
+        }
+
+        function confirmMoveStudent() {
+            const oldClass = document.getElementById('moveOldClass').value;
+            const studentName = document.getElementById('moveStudentName').value;
+            const newClass = document.getElementById('targetMoveClass').value;
+
+            if(!newClass) {
+                alert('يرجى اختيار الفصل المستهدف.');
+                return;
+            }
+
+            // التأكد من عدم تكرار الاسم في الفصل الجديد
+            if(!students[newClass]) students[newClass] = [];
+            if(students[newClass].includes(studentName)) {
+                alert('هذا الطالب موجود مسبقاً في الفصل المستهدف.');
+                return;
+            }
+
+            // إزالة الطالب من الفصل القديم وإضافته للجديد
+            students[oldClass] = students[oldClass].filter(st => st !== studentName);
+            students[newClass].push(studentName);
+
+            // تحديث السجلات المسجلة مسبقاً لهذا الطالب لتتبع الفصل الجديد
+            records.forEach(rec => {
+                if(rec.className === oldClass && rec.student === studentName) {
+                    rec.className = newClass;
+                }
+            });
+
+            saveData();
+            updateClassDropdowns();
+            renderClassList();
+            renderTable();
+            closeMoveStudentModal();
+            alert(`تم نقل الطالب "${studentName}" وسجلاته بنجاح إلى فصل "${newClass}".`);
+        }
+
         function renderClassList() {
             const container = document.getElementById('classListContainer');
             container.innerHTML = '';
@@ -372,7 +458,14 @@
                 let classStudents = students[c] || [];
                 let studentsHtml = classStudents.length === 0 
                     ? `<span class="text-[11px] text-slate-400">لا توجد أسماء مسجلة</span>`
-                    : classStudents.map(st => `<div class="flex justify-between items-center bg-white px-2 py-1 rounded border border-slate-100 text-xs my-1"><span>${st}</span> <button onclick="deleteStudentFromClass('${c}', '${st}')" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
+                    : classStudents.map(st => `
+                        <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-100 text-xs my-1 shadow-sm">
+                            <span class="font-semibold text-slate-700">${st}</span> 
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="openMoveStudentModal('${c}', '${st}')" class="text-amber-600 hover:text-amber-800 p-1 bg-amber-50 rounded" title="نقل لفصل آخر"><i class="fa-solid fa-right-left"></i> نقل</button>
+                                <button onclick="deleteStudentFromClass('${c}', '${st}')" class="text-red-500 hover:text-red-700 p-1 bg-red-50 rounded" title="حذف الطالب"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>`).join('');
 
                 const div = document.createElement('div');
                 div.className = "p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs";
@@ -381,7 +474,7 @@
                         <span><i class="fa-solid fa-graduation-cap text-indigo-600"></i> ${c} (${classStudents.length} طلاب)</span> 
                         <button onclick="deleteClass('${c}')" class="text-red-500 hover:text-red-700" title="حذف الفصل"><i class="fa-solid fa-trash"></i> حذف الفصل</button>
                     </div>
-                    <div class="max-h-32 overflow-y-auto space-y-1">${studentsHtml}</div>
+                    <div class="max-h-36 overflow-y-auto space-y-1">${studentsHtml}</div>
                 `;
                 container.appendChild(div);
             });
@@ -476,14 +569,8 @@
             const fileInput = document.getElementById('importNamesCsvFile');
             const file = fileInput.files[0];
 
-            if(!targetClass) {
-                alert('يرجى اختيار الفصل المستهدف.');
-                return;
-            }
-            if(!file) {
-                alert('يرجى اختيار ملف CSV.');
-                return;
-            }
+            if(!targetClass) { alert('يرجى اختيار الفصل المستهدف.'); return; }
+            if(!file) { alert('يرجى اختيار ملف CSV.'); return; }
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -522,10 +609,7 @@
             const note = document.getElementById('recordNote').value;
             const editIndex = parseInt(document.getElementById('editIndex').value);
 
-            if(!student) {
-                alert('يرجى اختيار الطالب.');
-                return;
-            }
+            if(!student) { alert('يرجى اختيار الطالب.'); return; }
 
             const recordData = { className, student, type, date, note };
 
