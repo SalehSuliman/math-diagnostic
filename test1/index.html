@@ -113,10 +113,6 @@ tbody tr:last-child td{border-bottom:0}
   width:92px;padding:9px 6px;text-align:center;border:1px solid var(--line);border-radius:9px;
   background:var(--bg);color:var(--ink);font-family:inherit;font-size:1.05rem;font-weight:600;
 }
-.tk{width:44px;height:44px;border-radius:9px;border:1px solid var(--line);background:transparent;color:transparent;font-size:1.3rem;font-weight:700;line-height:1;transition:background .12s,color .12s,border-color .12s}
-.tk[data-v="1"]{background:var(--good-bg);border-color:var(--good);color:var(--good)}
-.tk[data-v="2"]{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
-.tk:active{transform:scale(.93)}
 .badge{display:inline-block;min-width:84px;padding:4px 10px;border-radius:999px;font-size:.88rem;font-weight:700;border:1px solid transparent}
 .badge:empty{display:none}
 .c1{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
@@ -248,7 +244,7 @@ input[type=text],select{
         <th class="col-idx">#</th>
         <th class="col-name"><button class="th-btn" id="thName" type="button" title="ترتيب أبجدي">الاسم ⇅</button></th>
         <th>الواجب</th>
-        <th>المهام الأدائية</th>
+        <th>تسليم المهام</th>
         <th>اختبار الأعداد</th>
         <th><button class="th-btn" id="thCat" type="button" title="عرض التصنيفات">التصنيف ▾</button></th>
         <th>تعديل</th>
@@ -425,8 +421,11 @@ function fixNum(v, max){
   if (max !== undefined && n > max) n = max;
   return n;
 }
-function fixTask(v){ v = Number(v); return (v === 1 || v === 2) ? v : 0; }   // 0 فارغ، 1 ✓، 2 ✗
-const TK = ['', '✓', '✗'];
+function fixInt(v){                                   // رقم صحيح غير سالب بلا حد أعلى
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return isFinite(n) ? Math.max(0, Math.floor(n)) : null;
+}
 function normalize(data){
   const out = emptyState();
   if (!data || typeof data !== 'object') return out;
@@ -437,7 +436,7 @@ function normalize(data){
       id:   String(s && s.id ? s.id : uid()),
       name: String(s && s.name ? s.name : '').trim(),
       hw:   fixNum(s && s.hw),
-      task: fixTask(s && s.task),
+      task: fixInt(s && s.task),
       exam: fixNum(s && s.exam, MAX_EXAM)
     })).filter(s => s.name);
   });
@@ -481,7 +480,7 @@ function render(){
       <td class="col-idx">${i + 1}</td>
       <td class="col-name" title="${esc(s.name)}">${esc(s.name)}</td>
       <td><input class="num" type="number" inputmode="decimal" min="0" step="any" data-f="hw" value="${blank(s.hw)}" aria-label="الواجب — ${esc(s.name)}"></td>
-      <td><button type="button" class="tk" data-v="${s.task}" aria-label="المهام الأدائية — ${esc(s.name)}">${TK[s.task]}</button></td>
+      <td><input class="num" type="number" inputmode="numeric" min="0" step="1" data-f="task" value="${blank(s.task)}" aria-label="تسليم المهام — ${esc(s.name)}"></td>
       <td><input class="num" type="number" inputmode="decimal" min="0" max="${MAX_EXAM}" step="any" data-f="exam" value="${blank(s.exam)}" aria-label="اختبار الأعداد — ${esc(s.name)}"></td>
       <td class="cat">${badge(s.exam)}</td>
       <td><button type="button" class="row-edit" data-edit="1" aria-label="تعديل ${esc(s.name)}">✎</button></td>
@@ -507,6 +506,8 @@ tbody.addEventListener('input', ev => {
   const raw = inp.value.trim();
   if (f === 'hw'){
     st.hw = fixNum(raw);
+  }else if (f === 'task'){
+    st.task = fixInt(raw);
   }else{
     st.exam = fixNum(raw, MAX_EXAM);
     tr.querySelector('.cat').innerHTML = badge(st.exam);
@@ -521,13 +522,6 @@ tbody.addEventListener('change', ev => {            // تصحيح القيمة �
   inp.value = blank(st[inp.dataset.f]);
 });
 tbody.addEventListener('click', ev => {
-  const tk = ev.target.closest('.tk');                 // فارغ ← ✓ ← ✗ ← فارغ
-  if (tk){
-    const st = list().find(x => x.id === tk.closest('tr').dataset.id); if (!st) return;
-    st.task = (st.task + 1) % 3;
-    tk.dataset.v = st.task; tk.textContent = TK[st.task];
-    save(); return;
-  }
   const edit = ev.target.closest('[data-edit]');
   if (edit) openEdit(edit.closest('tr').dataset.id);
 });
@@ -605,14 +599,14 @@ function printTable(pc){
   if (!rows.length){ toast('لا يوجد طلاب في هذا التصنيف'); return; }
   const cnt = [0,0,0,0,0];
   all.forEach(s => cnt[classify(s.exam)]++);
-  const body = rows.map((s, i) => `<tr><td>${i + 1}</td><td class="n">${esc(s.name)}</td><td>${blank(s.hw)}</td><td>${TK[s.task]}</td><td>${blank(s.exam)}</td><td>${classify(s.exam) ? CATS[classify(s.exam) - 1].name : ''}</td></tr>`).join('');
+  const body = rows.map((s, i) => `<tr><td>${i + 1}</td><td class="n">${esc(s.name)}</td><td>${blank(s.hw)}</td><td>${blank(s.task)}</td><td>${blank(s.exam)}</td><td>${classify(s.exam) ? CATS[classify(s.exam) - 1].name : ''}</td></tr>`).join('');
   const stats = pc === 0
     ? CATS.map(c => `${c.name} : ${cnt[c.id]}`).join(' &nbsp;|&nbsp; ') + ` &nbsp;|&nbsp; غير مصنف : ${cnt[0]}`
     : `${CATS[pc - 1].name} : ${cnt[pc]}`;
   const catName = pc === 0 ? 'الكل' : CATS[pc - 1].name;
   $('#printArea').innerHTML = `<section class="sheet"><h2>الأعداد والعمليات عليها</h2>` +
     `<p>مادة ${SUBJECT} &nbsp;|&nbsp; الفصل: ${current} &nbsp;|&nbsp; التصنيف: ${catName} &nbsp;|&nbsp; عدد الطلاب: ${rows.length} &nbsp;|&nbsp; التاريخ: ${new Date().toLocaleDateString('ar')}</p>` +
-    `<table><thead><tr><th>#</th><th>الاسم</th><th>الواجب</th><th>المهام الأدائية</th><th>اختبار الأعداد</th><th>التصنيف</th></tr></thead><tbody>${body}</tbody></table>` +
+    `<table><thead><tr><th>#</th><th>الاسم</th><th>الواجب</th><th>تسليم المهام</th><th>اختبار الأعداد</th><th>التصنيف</th></tr></thead><tbody>${body}</tbody></table>` +
     `<div class="pst">${stats}</div></section>`;
   setTimeout(() => window.print(), 80);
 }
@@ -659,7 +653,7 @@ $('#fileCsv').addEventListener('change', async ev => {
     names.forEach(n => {
       if (exists.has(n)){ skipped++; return; }
       exists.add(n);
-      list().push({ id: uid(), name: n, hw: null, task: 0, exam: null });
+      list().push({ id: uid(), name: n, hw: null, task: null, exam: null });
       added++;
     });
     save(); render(); $('#dlgCsv').close();
@@ -685,7 +679,7 @@ function addStudent(){
   const name = $('#addName').value.replace(/\s+/g, ' ').trim();
   if (!name){ $('#addName').focus(); toast('اكتب اسم الطالب أولًا'); return; }
   const cls = $('#addClass').value;
-  state.classes[cls].push({ id: uid(), name, hw: null, task: 0, exam: null });
+  state.classes[cls].push({ id: uid(), name, hw: null, task: null, exam: null });
   if (cls !== current) current = cls;
   save(); render(); $('#dlgAdd').close();
   toast('أُضيف الطالب إلى الفصل ' + cls);
@@ -732,7 +726,7 @@ $('#clearGo').addEventListener('click', () => {
   }[scope];
   if (!confirm(msg)) return;
   if (scope === 'current')    state.classes[current] = [];
-  else if (scope === 'marks') list().forEach(s => { s.hw = null; s.exam = null; s.task = 0; });
+  else if (scope === 'marks') list().forEach(s => { s.hw = null; s.exam = null; s.task = null; });
   else                        CLASSES.forEach(c => state.classes[c] = []);
   save(); render(); $('#dlgClear').close();
   toast(scope === 'all' ? 'حُذفت بيانات الفصول الثلاثة' : 'تم الحذف');
