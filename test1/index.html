@@ -249,7 +249,7 @@ input[type=text],select{
         <th class="col-name"><button class="th-btn" id="thName" type="button" title="ترتيب أبجدي">الاسم ⇅</button></th>
         <th>الواجب</th>
         <th>المهام الأدائية</th>
-        <th>اختبار الأعداد <small>(من 16)</small></th>
+        <th>اختبار الأعداد</th>
         <th><button class="th-btn" id="thCat" type="button" title="عرض التصنيفات">التصنيف ▾</button></th>
         <th>تعديل</th>
       </tr></thead>
@@ -366,6 +366,13 @@ input[type=text],select{
     <button class="btn btn-primary" id="prGo" type="button">طباعة</button>
     <button class="btn btn-ghost" data-close type="button">إلغاء</button>
   </div>
+</dialog>
+
+<!-- طباعة الجدول حسب التصنيف -->
+<dialog id="dlgPrintAll">
+  <div class="dlg-head">طباعة الجدول — اختر التصنيف</div>
+  <div class="dlg-body" id="paList"></div>
+  <div class="dlg-foot"><button class="btn btn-ghost" data-close type="button">إلغاء</button></div>
 </dialog>
 
 <div id="printArea"></div>
@@ -580,20 +587,35 @@ $('#prGo').addEventListener('click', () => {
   $('#dlgPrint').close();
   setTimeout(() => window.print(), 80);
 });
-/* طباعة الجدول كاملًا للفصل الحالي (بدون عمود التعديل) */
+/* طباعة الجدول (بدون عمود التعديل) حسب التصنيف: 0 = الكل */
+$('#paList').innerHTML = '<button type="button" class="cat-btn badge c0" data-pc="0">الكل</button>' +
+  CATS.map(c => `<button type="button" class="cat-btn badge ${c.cls}" data-pc="${c.id}">${c.name}</button>`).join('');
 $('#btnPrintAll').addEventListener('click', () => {
-  const rows = list();
-  if (!rows.length){ toast('لا يوجد طلاب للطباعة'); return; }
+  if (!list().length){ toast('لا يوجد طلاب للطباعة'); return; }
+  $('#dlgPrintAll').showModal();
+});
+$('#paList').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-pc]'); if (!b) return;
+  $('#dlgPrintAll').close();
+  printTable(Number(b.dataset.pc));
+});
+function printTable(pc){
+  const all = list();
+  const rows = pc === 0 ? all : all.filter(s => classify(s.exam) === pc);
+  if (!rows.length){ toast('لا يوجد طلاب في هذا التصنيف'); return; }
   const cnt = [0,0,0,0,0];
-  rows.forEach(s => cnt[classify(s.exam)]++);
+  all.forEach(s => cnt[classify(s.exam)]++);
   const body = rows.map((s, i) => `<tr><td>${i + 1}</td><td class="n">${esc(s.name)}</td><td>${blank(s.hw)}</td><td>${TK[s.task]}</td><td>${blank(s.exam)}</td><td>${classify(s.exam) ? CATS[classify(s.exam) - 1].name : ''}</td></tr>`).join('');
-  const stats = CATS.map(c => `${c.name} : ${cnt[c.id]}`).join(' &nbsp;|&nbsp; ') + ` &nbsp;|&nbsp; غير مصنف : ${cnt[0]}`;
+  const stats = pc === 0
+    ? CATS.map(c => `${c.name} : ${cnt[c.id]}`).join(' &nbsp;|&nbsp; ') + ` &nbsp;|&nbsp; غير مصنف : ${cnt[0]}`
+    : `${CATS[pc - 1].name} : ${cnt[pc]}`;
+  const catName = pc === 0 ? 'الكل' : CATS[pc - 1].name;
   $('#printArea').innerHTML = `<section class="sheet"><h2>الأعداد والعمليات عليها</h2>` +
-    `<p>مادة ${SUBJECT} &nbsp;|&nbsp; الفصل: ${current} &nbsp;|&nbsp; عدد الطلاب: ${rows.length} &nbsp;|&nbsp; التاريخ: ${new Date().toLocaleDateString('ar')}</p>` +
+    `<p>مادة ${SUBJECT} &nbsp;|&nbsp; الفصل: ${current} &nbsp;|&nbsp; التصنيف: ${catName} &nbsp;|&nbsp; عدد الطلاب: ${rows.length} &nbsp;|&nbsp; التاريخ: ${new Date().toLocaleDateString('ar')}</p>` +
     `<table><thead><tr><th>#</th><th>الاسم</th><th>الواجب</th><th>المهام الأدائية</th><th>اختبار الأعداد</th><th>التصنيف</th></tr></thead><tbody>${body}</tbody></table>` +
     `<div class="pst">${stats}</div></section>`;
   setTimeout(() => window.print(), 80);
-});
+}
 window.addEventListener('afterprint', () => { $('#printArea').innerHTML = ''; });
 
 /* 6) استيراد الأسماء من CSV */
