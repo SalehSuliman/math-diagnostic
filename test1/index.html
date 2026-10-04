@@ -245,7 +245,7 @@ input[type=text],select{
         <th class="col-name"><button class="th-btn" id="thName" type="button" title="ترتيب أبجدي">الاسم ⇅</button></th>
         <th>الواجب</th>
         <th>تسليم المهام</th>
-        <th>اختبار الأعداد</th>
+        <th><button class="th-btn" id="thExam" type="button" title="ترتيب حسب الدرجة">اختبار الأعداد ⇅</button></th>
         <th><button class="th-btn" id="thCat" type="button" title="عرض التصنيفات">التصنيف ▾</button></th>
         <th>تعديل</th>
       </tr></thead>
@@ -388,6 +388,7 @@ const CATS = [
   { id:4, name:'ممتاز',     cls:'c4' }
 ];
 
+const catName = id => id === 0 ? 'غير مصنف' : CATS[id - 1].name;
 function classify(exam){
   if (exam === null || exam === undefined) return 0;
   if (exam < 5)  return 1;
@@ -539,9 +540,24 @@ $('#thName').addEventListener('click', () => {
   save(); render();
 });
 
+/* ترتيب حسب اختبار الأعداد: من الأقل للأكثر ثم العكس (الفارغ دائمًا في النهاية) */
+let examDir = 1;
+$('#thExam').addEventListener('click', () => {
+  list().sort((a, b) => {
+    if (a.exam === null && b.exam === null) return 0;
+    if (a.exam === null) return 1;
+    if (b.exam === null) return -1;
+    return (a.exam - b.exam) * examDir;
+  });
+  toast(examDir === 1 ? 'رُتّب الجدول من الأقل درجة إلى الأعلى' : 'رُتّب الجدول من الأعلى درجة إلى الأقل');
+  examDir = -examDir;
+  save(); render();
+});
+
 /* 5) عرض التصنيف وطباعته */
 let repCat = 0;
-$('#catList').innerHTML = CATS.map(c => `<button type="button" class="cat-btn badge ${c.cls}" data-cat="${c.id}">${c.name}</button>`).join('');
+$('#catList').innerHTML = CATS.map(c => `<button type="button" class="cat-btn badge ${c.cls}" data-cat="${c.id}">${c.name}</button>`).join('') +
+  '<button type="button" class="cat-btn badge c0" data-cat="0">غير مصنف</button>';
 $('#thCat').addEventListener('click', () => $('#dlgCat').showModal());
 $('#catList').addEventListener('click', ev => {
   const b = ev.target.closest('[data-cat]'); if (!b) return;
@@ -552,25 +568,25 @@ $('#catList').addEventListener('click', ev => {
 function tableFor(cls, cat){
   const rows = state.classes[cls].filter(s => classify(s.exam) === cat);
   if (!rows.length) return '<div class="rep-none">لا يوجد طلاب في هذا التصنيف</div>';
-  return `<table class="rep"><thead><tr><th>#</th><th>الاسم</th><th>الواجب</th><th>اختبار الأعداد</th></tr></thead><tbody>` +
-    rows.map((s, i) => `<tr><td>${i + 1}</td><td class="n">${esc(s.name)}</td><td>${blank(s.hw)}</td><td>${s.exam}</td></tr>`).join('') +
+  return `<table class="rep"><thead><tr><th>#</th><th>الاسم</th><th>الواجب</th><th>تسليم المهام</th><th>اختبار الأعداد</th></tr></thead><tbody>` +
+    rows.map((s, i) => `<tr><td>${i + 1}</td><td class="n">${esc(s.name)}</td><td>${blank(s.hw)}</td><td>${blank(s.task)}</td><td>${blank(s.exam)}</td></tr>`).join('') +
     `</tbody></table>`;
 }
 function showReport(){
-  const name = CATS[repCat - 1].name;
+  const name = catName(repCat);
   $('#repTitle').textContent = `${SUBJECT} — ${name} — الفصل ${current}`;
   $('#repBody').innerHTML = tableFor(current, repCat);
   $('#dlgReport').showModal();
 }
 $('#repBack').addEventListener('click', () => { $('#dlgReport').close(); $('#dlgCat').showModal(); });
 $('#repPrint').addEventListener('click', () => {
-  $('#prCat').textContent = CATS[repCat - 1].name;
+  $('#prCat').textContent = catName(repCat);
   $('#prClass').textContent = current;
   $('#dlgPrint').showModal();
 });
 $('#prGo').addEventListener('click', () => {
   const scope = document.querySelector('input[name=prScope]:checked').value;
-  const name = CATS[repCat - 1].name;
+  const name = catName(repCat);
   const date = new Date().toLocaleDateString('ar');
   const targets = scope === 'all' ? CLASSES : [current];
   $('#printArea').innerHTML = targets.map(c => {
@@ -582,8 +598,9 @@ $('#prGo').addEventListener('click', () => {
   setTimeout(() => window.print(), 80);
 });
 /* طباعة الجدول (بدون عمود التعديل) حسب التصنيف: 0 = الكل */
-$('#paList').innerHTML = '<button type="button" class="cat-btn badge c0" data-pc="0">الكل</button>' +
-  CATS.map(c => `<button type="button" class="cat-btn badge ${c.cls}" data-pc="${c.id}">${c.name}</button>`).join('');
+$('#paList').innerHTML = '<button type="button" class="cat-btn badge c0" data-pc="-1">الكل</button>' +
+  CATS.map(c => `<button type="button" class="cat-btn badge ${c.cls}" data-pc="${c.id}">${c.name}</button>`).join('') +
+  '<button type="button" class="cat-btn badge c0" data-pc="0">غير مصنف</button>';
 $('#btnPrintAll').addEventListener('click', () => {
   if (!list().length){ toast('لا يوجد طلاب للطباعة'); return; }
   $('#dlgPrintAll').showModal();
@@ -595,17 +612,17 @@ $('#paList').addEventListener('click', ev => {
 });
 function printTable(pc){
   const all = list();
-  const rows = pc === 0 ? all : all.filter(s => classify(s.exam) === pc);
+  const rows = pc === -1 ? all : all.filter(s => classify(s.exam) === pc);
   if (!rows.length){ toast('لا يوجد طلاب في هذا التصنيف'); return; }
   const cnt = [0,0,0,0,0];
   all.forEach(s => cnt[classify(s.exam)]++);
   const body = rows.map((s, i) => `<tr><td>${i + 1}</td><td class="n">${esc(s.name)}</td><td>${blank(s.hw)}</td><td>${blank(s.task)}</td><td>${blank(s.exam)}</td><td>${classify(s.exam) ? CATS[classify(s.exam) - 1].name : ''}</td></tr>`).join('');
-  const stats = pc === 0
+  const stats = pc === -1
     ? CATS.map(c => `${c.name} : ${cnt[c.id]}`).join(' &nbsp;|&nbsp; ') + ` &nbsp;|&nbsp; غير مصنف : ${cnt[0]}`
-    : `${CATS[pc - 1].name} : ${cnt[pc]}`;
-  const catName = pc === 0 ? 'الكل' : CATS[pc - 1].name;
+    : `${catName(pc)} : ${cnt[pc]}`;
+  const label = pc === -1 ? 'الكل' : catName(pc);
   $('#printArea').innerHTML = `<section class="sheet"><h2>الأعداد والعمليات عليها</h2>` +
-    `<p>مادة ${SUBJECT} &nbsp;|&nbsp; الفصل: ${current} &nbsp;|&nbsp; التصنيف: ${catName} &nbsp;|&nbsp; عدد الطلاب: ${rows.length} &nbsp;|&nbsp; التاريخ: ${new Date().toLocaleDateString('ar')}</p>` +
+    `<p>مادة ${SUBJECT} &nbsp;|&nbsp; الفصل: ${current} &nbsp;|&nbsp; التصنيف: ${label} &nbsp;|&nbsp; عدد الطلاب: ${rows.length} &nbsp;|&nbsp; التاريخ: ${new Date().toLocaleDateString('ar')}</p>` +
     `<table><thead><tr><th>#</th><th>الاسم</th><th>الواجب</th><th>تسليم المهام</th><th>اختبار الأعداد</th><th>التصنيف</th></tr></thead><tbody>${body}</tbody></table>` +
     `<div class="pst">${stats}</div></section>`;
   setTimeout(() => window.print(), 80);
