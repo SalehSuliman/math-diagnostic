@@ -164,19 +164,24 @@ input[type=text],select{
 #toast.show{opacity:1;transform:translateY(0)}
 
 #printArea{display:none}
+#printArea.measure{display:block;position:absolute;top:0;inset-inline-start:0;visibility:hidden;width:186mm}
+#printArea .sheet{padding:8mm;color:#000;background:#fff}
+#printArea h2{margin:0 0 4px;font-size:18pt}
+#printArea p{margin:0 0 10px;font-size:11pt}
+#printArea table{width:100%;min-width:0;border-collapse:collapse;table-layout:fixed}
+#printArea th,#printArea td{border:1px solid #000;padding:6px 4px;text-align:center;font-size:12pt;position:static;background:none;color:#000;white-space:nowrap;overflow:hidden}
+#printArea td.n{text-align:start;padding-inline:8px}
+#printArea thead th{background:#eee}
+#printArea th:nth-child(1){width:7%}
+#printArea th:nth-child(2){width:33%}
+#printArea .pst{margin-top:12px;font-size:12pt;font-weight:700}
 @media print{
   body>*:not(#printArea){display:none!important}
   body{background:#fff;color:#000}
   #printArea{display:block}
-  #printArea .sheet{page-break-after:always;padding:8mm}
+  #printArea .sheet{page-break-after:always;break-after:page}
   #printArea .sheet:last-child{page-break-after:auto}
-  #printArea h2{margin:0 0 4px;font-size:18pt}
-  #printArea p{margin:0 0 10px;font-size:11pt}
-  #printArea table{width:100%;min-width:0;border-collapse:collapse}
-  #printArea th,#printArea td{border:1px solid #000;padding:6px 8px;text-align:center;font-size:12pt;position:static;background:none;color:#000}
-  #printArea td.n{text-align:start}
-  #printArea thead th{background:#eee}
-  #printArea .pst{margin-top:12px;font-size:12pt;font-weight:700}
+  #printArea tr{break-inside:avoid}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 @media (max-width:520px){
@@ -368,6 +373,16 @@ input[type=text],select{
 <dialog id="dlgPrintAll">
   <div class="dlg-head">طباعة الجدول — اختر التصنيف</div>
   <div class="dlg-body" id="paList"></div>
+  <div class="dlg-foot"><button class="btn btn-ghost" data-close type="button">إلغاء</button></div>
+</dialog>
+
+<!-- نطاق طباعة الجدول -->
+<dialog id="dlgPrintScope">
+  <div class="dlg-head">طباعة: <span id="psCat"></span></div>
+  <div class="dlg-body">
+    <button type="button" class="cat-btn btn" data-ps="current">لهذا الفصل (<span id="psClass"></span>)</button>
+    <button type="button" class="cat-btn btn" data-ps="all">لجميع الفصول</button>
+  </div>
   <div class="dlg-foot"><button class="btn btn-ghost" data-close type="button">إلغاء</button></div>
 </dialog>
 
@@ -595,7 +610,7 @@ $('#prGo').addEventListener('click', () => {
            `<p>الفصل: ${c} &nbsp;|&nbsp; عدد الطلاب: ${n} &nbsp;|&nbsp; التاريخ: ${date}</p>${tableFor(c, repCat)}</section>`;
   }).join('');
   $('#dlgPrint').close();
-  setTimeout(() => window.print(), 80);
+  fitPrint(); setTimeout(() => window.print(), 80);
 });
 /* طباعة الجدول (بدون عمود التعديل) حسب التصنيف: 0 = الكل */
 $('#paList').innerHTML = '<button type="button" class="cat-btn badge c0" data-pc="-1">الكل</button>' +
@@ -605,15 +620,25 @@ $('#btnPrintAll').addEventListener('click', () => {
   if (!list().length){ toast('لا يوجد طلاب للطباعة'); return; }
   $('#dlgPrintAll').showModal();
 });
+let pendingPc = -1;
 $('#paList').addEventListener('click', ev => {
   const b = ev.target.closest('[data-pc]'); if (!b) return;
+  pendingPc = Number(b.dataset.pc);
   $('#dlgPrintAll').close();
-  printTable(Number(b.dataset.pc));
+  $('#psCat').textContent = pendingPc === -1 ? 'الكل' : catName(pendingPc);
+  $('#psClass').textContent = current;
+  $('#dlgPrintScope').showModal();
 });
-function printTable(pc){
-  const all = list();
+$('#dlgPrintScope').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-ps]'); if (!b) return;
+  $('#dlgPrintScope').close();
+  printTable(pendingPc, b.dataset.ps === 'all' ? CLASSES : [current]);
+});
+
+/* صفحة واحدة لكل فصل، تبدأ دائمًا من أول الصفحة */
+function sheetFor(cls, pc){
+  const all = state.classes[cls];
   const rows = pc === -1 ? all : all.filter(s => classify(s.exam) === pc);
-  if (!rows.length){ toast('لا يوجد طلاب في هذا التصنيف'); return; }
   const cnt = [0,0,0,0,0];
   all.forEach(s => cnt[classify(s.exam)]++);
   const body = rows.map((s, i) => `<tr><td>${i + 1}</td><td class="n">${esc(s.name)}</td><td>${blank(s.hw)}</td><td>${blank(s.task)}</td><td>${blank(s.exam)}</td><td>${classify(s.exam) ? CATS[classify(s.exam) - 1].name : ''}</td></tr>`).join('');
@@ -621,12 +646,31 @@ function printTable(pc){
     ? CATS.map(c => `${c.name} : ${cnt[c.id]}`).join(' &nbsp;|&nbsp; ') + ` &nbsp;|&nbsp; غير مصنف : ${cnt[0]}`
     : `${catName(pc)} : ${cnt[pc]}`;
   const label = pc === -1 ? 'الكل' : catName(pc);
-  $('#printArea').innerHTML = `<section class="sheet"><h2>الأعداد والعمليات عليها</h2>` +
-    `<p>مادة ${SUBJECT} &nbsp;|&nbsp; الفصل: ${current} &nbsp;|&nbsp; التصنيف: ${label} &nbsp;|&nbsp; عدد الطلاب: ${rows.length} &nbsp;|&nbsp; التاريخ: ${new Date().toLocaleDateString('ar')}</p>` +
-    `<table><thead><tr><th>#</th><th>الاسم</th><th>الواجب</th><th>تسليم المهام</th><th>اختبار الأعداد</th><th>التصنيف</th></tr></thead><tbody>${body}</tbody></table>` +
+  return `<section class="sheet"><h2>الأعداد والعمليات عليها</h2>` +
+    `<p>مادة ${SUBJECT} &nbsp;|&nbsp; الفصل: ${cls} &nbsp;|&nbsp; التصنيف: ${label} &nbsp;|&nbsp; عدد الطلاب: ${rows.length} &nbsp;|&nbsp; التاريخ: ${new Date().toLocaleDateString('ar')}</p>` +
+    (rows.length
+      ? `<table><thead><tr><th>#</th><th>الاسم</th><th>الواجب</th><th>تسليم المهام</th><th>اختبار الأعداد</th><th>التصنيف</th></tr></thead><tbody>${body}</tbody></table>`
+      : '<p>لا يوجد طلاب في هذا التصنيف</p>') +
     `<div class="pst">${stats}</div></section>`;
-  setTimeout(() => window.print(), 80);
 }
+function printTable(pc, classes){
+  if (classes.length === 1 && !state.classes[classes[0]].some(s => pc === -1 || classify(s.exam) === pc)){
+    toast('لا يوجد طلاب في هذا التصنيف'); return;
+  }
+  $('#printArea').innerHTML = classes.map(c => sheetFor(c, pc)).join('');
+  fitPrint(); setTimeout(() => window.print(), 80);
+}
+/* تصغير الخط تلقائيًا ليبقى كل نص في سطر واحد داخل خليته عند الطباعة */
+function fitPrint(){
+  const pa = $('#printArea');
+  pa.classList.add('measure');
+  pa.querySelectorAll('td, th').forEach(c => {
+    let f = parseFloat(getComputedStyle(c).fontSize);
+    while (c.scrollWidth > c.clientWidth && f > 6){ f -= 0.5; c.style.fontSize = f + 'px'; }
+  });
+  pa.classList.remove('measure');
+}
+
 window.addEventListener('afterprint', () => { $('#printArea').innerHTML = ''; });
 
 /* 6) استيراد الأسماء من CSV */
