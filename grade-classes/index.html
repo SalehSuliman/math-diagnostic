@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1d3557">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>متابعة</title>
+<style>
+:root{--ink:#1d3557;--bg:#eef2f7;--card:#fff;--line:#c9d3e0;--txt:#14213d;--mut:#6b7a90}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1724;--card:#17212f;--line:#2b3a4f;--txt:#e6ecf5;--mut:#92a1b8}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;overscroll-behavior:none}
+header{height:48px;margin-top:env(safe-area-inset-top);background:var(--ink);color:#fff;display:flex;align-items:center;gap:6px;padding:0 6px}
+header h1{flex:1;font-size:16px;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header button{background:none;border:0;color:#fff;font-size:22px;width:42px;height:42px;border-radius:8px}
+header button:active{background:#ffffff26}
+main{height:calc(100dvh - 48px - env(safe-area-inset-top));overflow:auto;position:relative}
+table{border-collapse:separate;border-spacing:0;font-size:15px}
+th,td{border-left:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;background:var(--card);padding:0}
+th{background:var(--ink);color:#fff;font-weight:600;position:sticky;z-index:2;height:32px}
+thead tr:first-child th{top:0}
+thead tr:nth-child(2) th{top:32px;background:#2a4a75}
+th.dh{border-right:2px solid var(--bg)}
+.n{position:sticky;right:0;min-width:32px;width:32px;z-index:3;color:var(--mut);font-size:12px}
+.nm{position:sticky;right:32px;min-width:max(25vw,96px);max-width:40vw;text-align:right;padding:0 8px;z-index:3;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:-2px 0 0 var(--line) inset}
+th.n,th.nm{z-index:5;color:#fff}
+td.c{min-width:40px;height:40px;font-weight:700;font-size:17px;cursor:pointer;user-select:none}
+td.c.k0{color:#d62828;background:#d6282814}td.c.k1{color:#e07a00;background:#e07a0014}
+td.c.k2{color:#2a7de1;background:#2a7de114}td.c.k3{color:#2a9d8f;background:#2a9d8f14}
+td.c.k4{color:#7b2cbf;background:#7b2cbf14}td.c.k5{color:#c2185b;background:#c2185b14}
+td.c.k6{color:#558b2f;background:#558b2f14}td.c.k7{color:#795548;background:#79554814}
+tfoot td{background:var(--bg);color:var(--mut);font-size:12px;height:28px}
+.empty{padding:40px 20px;text-align:center;color:var(--mut);line-height:2}
+#dr{position:fixed;inset:0;background:#0007;z-index:20;display:none}
+#dr.o{display:block}
+#dr nav{position:absolute;right:0;top:0;bottom:0;width:min(78vw,300px);background:var(--card);overflow:auto;padding:calc(10px + env(safe-area-inset-top)) 0 20px}
+#dr h4{margin:14px 16px 4px;font-size:12px;color:var(--mut);font-weight:600}
+#dr button{display:block;width:100%;text-align:right;background:none;border:0;color:var(--txt);font:inherit;font-size:15px;padding:11px 16px}
+#dr button:active{background:var(--bg)}
+#dr button.cl.on{background:var(--ink);color:#fff;font-weight:600}
+#m{position:fixed;inset:0;background:#0008;z-index:30;display:flex;align-items:center;justify-content:center;padding:14px}
+#m[hidden]{display:none}
+.bx{background:var(--card);border-radius:14px;padding:16px;width:min(94vw,420px);max-height:86vh;overflow:auto}
+.bx h3{margin:0 0 10px;font-size:17px}
+.bx select,.bx textarea,.bx input[type=text]{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--txt)}
+.bx label{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
+.bx label input{width:20px;height:20px}
+.bt{display:flex;gap:8px;margin-top:14px}
+.bt button{flex:1;font:inherit;padding:11px;border:0;border-radius:8px;background:var(--ink);color:#fff;font-weight:600}
+.bt button.g{background:var(--bg);color:var(--txt)}
+.st{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+.st th,.st td{position:static;border:1px solid var(--line);padding:5px 4px;height:auto;background:none}
+.st th{background:var(--ink);color:#fff}.st td:first-child{text-align:right}
+.st h5{margin:14px 0 0;font-size:15px}
+#fl{position:fixed;left:10px;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:15}
+.chip{min-width:130px;max-width:70vw;padding:9px 14px;border-radius:30px;color:#fff;box-shadow:0 4px 14px #0004;user-select:none;display:flex;flex-direction:column;line-height:1.35}
+.chip b{font-size:20px;font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
+.chip span{font-size:12px;opacity:.95}
+.s1{background:#2a9d62}.s2{background:#e0a100}.s3{background:#d62828}.s4{background:#5b2a86}
+.chip.x{opacity:.8;outline:3px solid #fff8}
+#pr{display:none}
+@media print{body>*:not(#pr){display:none!important}#pr{display:block;background:#fff;color:#000}
+html,body{height:auto;overflow:visible;background:#fff}
+.pt{border-collapse:collapse;width:100%;font-size:11px;page-break-after:always}.pt:last-child{page-break-after:auto}
+.pt th,.pt td{border:1px solid #000;padding:2px;text-align:center;height:20px;background:#fff;color:#000;position:static}
+.pt th{background:#ddd;font-weight:700}.pt td.l{text-align:right;white-space:nowrap;padding:0 4px}
+.pt caption{font-size:14px;font-weight:700;text-align:right;padding-bottom:6px;caption-side:top}}
+</style>
+</head>
+<body>
+<header>
+ <button id="mb" aria-label="القائمة">☰</button>
+ <h1 id="ti"></h1>
+ <button id="pm" aria-label="استئذان">⏱</button>
+</header>
+<main id="mn"></main>
+<div id="fl"></div>
+<div id="dr"><nav id="nv"></nav></div>
+<div id="m" hidden></div>
+<div id="pr"></div><input type="file" id="fi" hidden><style id="pg"></style>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const KEY='mutabaa1';
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{classes:['٣-١','٣-٢','٣-٣'].map((n,i)=>({id:'c'+i,name:n,st:[]})),cur:'c0',cols:['غ','ت','م','ك','ق','ن','س','x'],days:[],marks:{},month:'',mname:'',arch:{},timers:[]};
+const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const cls=()=>S.classes.find(c=>c.id===S.cur);
+const nf=n=>new Intl.NumberFormat('ar-SA-u-nu-arab').format(n);
+
+/* ---------- التاريخ الهجري والأرشفة ---------- */
+function hijri(d=new Date()){const o={};new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'}).formatToParts(d).forEach(p=>o[p.type]=p.value);return o}
+function rollover(){
+  const d=new Date(),p=hijri(d),mk=p.year+'-'+p.month.padStart(2,'0');
+  if(S.month!==mk){
+    if(S.month&&S.days.length)S.arch[S.month]={name:S.mname,classes:JSON.parse(JSON.stringify(S.classes)),cols:[...S.cols],days:S.days,marks:S.marks};
+    S.days=[];S.marks={};S.month=mk;
+    S.mname=new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab',{month:'long',year:'numeric'}).format(d);
+  }
+  const dk=mk+'-'+p.day.padStart(2,'0');
+  if(!S.days.find(x=>x.k===dk))S.days.push({k:dk,w:d.toLocaleDateString('ar',{weekday:'short'}),d:+p.day,m:+p.month});
+  save();
+}
+
+/* ---------- الترتيب الأبجدي ---------- */
+const AK=n=>String(n).replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآٱ]/g,'ا').replace(/\s+/g,' ').trim();
+const COL=new Intl.Collator('ar');
+const srt=(a,b)=>COL.compare(AK(a.n),AK(b.n));
+const sortC=c=>c.st.sort(srt);
+/* ---------- العرض ---------- */
+function render(){
+  const c=cls();if(c)sortC(c);
+  $('#ti').textContent=c?`${c.name} · ${S.mname}`:'متابعة';
+  const mn=$('#mn');
+  if(!c){mn.innerHTML='<div class=empty>لا توجد فصول.<br>افتح القائمة ثم أضف فصلاً.</div>';return}
+  if(!c.st.length){mn.innerHTML='<div class=empty>لا يوجد طلاب في هذا الفصل.<br>افتح القائمة ← إضافة طلاب.</div>';return}
+  const n=S.cols.length;
+  let h='<table><thead><tr><th class="n" rowspan=2>#</th><th class="nm" rowspan=2>الاسم</th>';
+  S.days.forEach(d=>h+=`<th class=dh colspan=${n}>${d.w} ${nf(d.d)}/${nf(d.m)}</th>`);
+  h+='</tr><tr>';
+  S.days.forEach(()=>S.cols.forEach(k=>h+=`<th>${esc(k)}</th>`));
+  h+='</tr></thead><tbody>';
+  c.st.forEach((s,i)=>{
+    h+=`<tr><td class=n>${nf(i+1)}</td><td class=nm>${esc(s.n)}</td>`;
+    S.days.forEach(d=>S.cols.forEach((k,j)=>{const on=S.marks[`${s.id}|${d.k}|${k}`];
+      h+=`<td class="c k${j%8}" data-s="${s.id}" data-d="${d.k}" data-c="${esc(k)}">${on?esc(k):''}</td>`}));
+    h+='</tr>';
+  });
+  h+=`</tbody><tfoot><tr><td class=n></td><td class=nm style="background:var(--bg)">عدد: ${nf(c.st.length)}</td>`;
+  S.days.forEach(d=>S.cols.forEach(k=>{const t=c.st.filter(s=>S.marks[`${s.id}|${d.k}|${k}`]).length;h+=`<td>${t?nf(t):''}</td>`}));
+  mn.innerHTML=h+'</tr></tfoot></table>';
+}
+$('#mn').addEventListener('click',e=>{
+  const t=e.target.closest('td.c');if(!t)return;
+  const k=`${t.dataset.s}|${t.dataset.d}|${t.dataset.c}`;
+  if(S.marks[k]){delete S.marks[k];t.textContent=''}else{S.marks[k]=1;t.textContent=t.dataset.c}
+  save();render2();
+});
+function render2(){ // تحديث صف العدد فقط
+  const c=cls();if(!c)return;const f=document.querySelector('tfoot tr');if(!f)return;
+  const cells=[...f.children].slice(2);let i=0;
+  S.days.forEach(d=>S.cols.forEach(k=>{const t=c.st.filter(s=>S.marks[`${s.id}|${d.k}|${k}`]).length;cells[i++].textContent=t?nf(t):''}));
+}
+
+/* ---------- نوافذ ---------- */
+function dlg(t,inner,get,single){return new Promise(r=>{
+  const m=$('#m');
+  m.innerHTML=`<div class=bx><h3>${t}</h3>${inner}<div class=bt><button id=ok>${single?'إغلاق':'موافق'}</button>${single?'':'<button id=no class=g>إلغاء</button>'}</div></div>`;
+  m.hidden=false;const done=v=>{m.hidden=true;r(v)};
+  $('#ok').onclick=()=>done(get?get(m):true);
+  if(!single)$('#no').onclick=()=>done(null);
+})}
+const pickOne=(t,items)=>dlg(t,`<select id=sel>${items.map(i=>`<option value="${i[0]}">${esc(i[1])}</option>`).join('')}</select>`,m=>m.querySelector('#sel').value);
+const pickMany=(t,items)=>dlg(t,items.map(i=>`<label><input type=checkbox value="${i[0]}">${esc(i[1])}</label>`).join(''),m=>[...m.querySelectorAll('input:checked')].map(x=>x.value));
+const ask=(t,v='')=>dlg(t,`<input type=text id=tx value="${esc(v)}">`,m=>m.querySelector('#tx').value.trim());
+const stuItems=()=>{const c=cls();return c?c.st.map(s=>[s.id,s.n]):[]};
+
+/* ---------- الإحصائيات ---------- */
+function statHTML(snap,classes,onlyS){
+  let h=`<div style="font-size:13px;color:var(--mut)">عدد الأيام: ${nf(snap.days.length)}</div>`;
+  classes.forEach(c=>{
+    const rows=[...c.st].sort(srt).filter(s=>!onlyS||s.id===onlyS);if(!rows.length)return;
+    const tot=snap.cols.map(()=>0);
+    let b='';rows.forEach(s=>{
+      const v=snap.cols.map((k,j)=>{let n=0;snap.days.forEach(d=>{if(snap.marks[`${s.id}|${d.k}|${k}`])n++});tot[j]+=n;return n});
+      b+=`<tr><td>${esc(s.n)}</td>${v.map(x=>`<td>${x?nf(x):'·'}</td>`).join('')}</tr>`});
+    h+=`<h5>${esc(c.name)}</h5><div style="overflow:auto"><table class=st><tr><th>الاسم</th>${snap.cols.map(k=>`<th>${esc(k)}</th>`).join('')}</tr>${b}${onlyS?'':`<tr style="font-weight:700"><td>المجموع</td>${tot.map(x=>`<td>${nf(x)}</td>`).join('')}</tr>`}</table></div>`;
+  });
+  return h;
+}
+const live=()=>({days:S.days,marks:S.marks,cols:S.cols});
+
+/* ---------- الإجراءات ---------- */
+const A={
+ async addClass(){const n=await ask('اسم الفصل الجديد');if(!n)return;const c={id:'c'+uid(),name:n,st:[]};S.classes.push(c);S.cur=c.id},
+ async editClass(){const c=cls();if(!c)return;const n=await ask('تعديل اسم الفصل',c.name);if(n)c.name=n},
+ async delClass(){const c=cls();if(!c)return;if(!confirm(`حذف الفصل ${c.name} وجميع طلابه؟`))return;
+  c.st.forEach(s=>Object.keys(S.marks).forEach(k=>{if(k.startsWith(s.id+'|'))delete S.marks[k]}));
+  S.classes=S.classes.filter(x=>x!==c);S.cur=S.classes[0]?.id},
+ async addStu(){if(!cls())return;const r=await dlg('إضافة طالب (اسم في كل سطر، ويمكن لصق عدة أسماء)','<textarea id=tx rows=8></textarea>',m=>m.querySelector('#tx').value);
+  if(r)r.split('\n').map(x=>x.trim()).filter(Boolean).forEach(n=>cls().st.push({id:'s'+uid(),n}))},
+ async editStu(){const id=await pickOne('اختر الطالب',stuItems());if(!id)return;const s=cls().st.find(x=>x.id===id);const n=await ask('تعديل الاسم',s.n);if(n)s.n=n},
+ async moveStu(){const id=await pickOne('اختر الطالب للنقل',stuItems());if(!id)return;
+  const o=S.classes.filter(c=>c!==cls()).map(c=>[c.id,c.name]);if(!o.length)return;
+  const to=await pickOne('النقل إلى فصل',o);if(!to)return;
+  const f=cls(),s=f.st.find(x=>x.id===id);f.st=f.st.filter(x=>x!==s);S.classes.find(c=>c.id===to).st.push(s)},
+ async delStu(){const id=await pickOne('اختر الطالب للحذف',stuItems());if(!id)return;const f=cls(),s=f.st.find(x=>x.id===id);
+  if(!confirm(`حذف الطالب ${s.n}؟`))return;f.st=f.st.filter(x=>x!==s);Object.keys(S.marks).forEach(k=>{if(k.startsWith(id+'|'))delete S.marks[k]})},
+ async addCol(){const n=await ask('رمز العمود الجديد (حرف أو كلمة قصيرة)');if(!n)return;if(S.cols.includes(n)||n.includes('|'))return alert('الرمز مكرر أو غير صالح');S.cols.push(n)},
+ async stAll(){await dlg('إحصائيات جميع الفصول · '+esc(S.mname),statHTML(live(),S.classes),null,1)},
+ async stCls(){const c=cls();if(c)await dlg('إحصائيات '+esc(c.name),statHTML(live(),[c]),null,1)},
+ async stStu(){const id=await pickOne('اختر الطالب',stuItems());if(id)await dlg('إحصائيات طالب',statHTML(live(),[cls()],id),null,1)},
+ async archive(){const ks=Object.keys(S.arch).sort().reverse();if(!ks.length)return alert('لا يوجد أرشيف بعد. يُحفظ الشهر تلقائياً عند بدء شهر هجري جديد.');
+  const k=await pickOne('اختر الشهر',ks.map(k=>[k,S.arch[k].name||k]));if(!k)return;const a=S.arch[k];await dlg('أرشيف '+esc(a.name||k),statHTML(a,a.classes),null,1)}
+};
+/* ---------- أدوات الملفات ---------- */
+const pickFile=acc=>new Promise(r=>{const i=$('#fi');i.value='';i.accept=acc;i.onchange=()=>r(i.files[0]||null);i.addEventListener('cancel',()=>r(null),{once:true});i.click()});
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+async function unzip(buf){
+  const u=new Uint8Array(buf),dv=new DataView(buf);let e=u.length-22;while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw 0;const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const out={};
+  for(let i=0;i<n;i++){
+    const meth=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),off=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(u.subarray(p+46,p+46+nl));p+=46+nl+el+cl;
+    if(!/^xl\/(sharedStrings\.xml|worksheets\/sheet\d+\.xml)$/.test(name))continue;
+    const ds=off+30+dv.getUint16(off+26,true)+dv.getUint16(off+28,true);let d=u.subarray(ds,ds+csz);
+    if(meth===8)d=new Uint8Array(await new Response(new Blob([d]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+    out[name]=new TextDecoder().decode(d);
+  }return out;
+}
+async function xlsxRows(buf){
+  const z=await unzip(buf),ks=Object.keys(z).filter(k=>/worksheets/.test(k)).sort();if(!ks.length)throw 0;
+  const P=new DOMParser(),ss=[];
+  if(z['xl/sharedStrings.xml'])P.parseFromString(z['xl/sharedStrings.xml'],'text/xml').querySelectorAll('si').forEach(si=>ss.push([...si.getElementsByTagName('t')].map(t=>t.textContent).join('')));
+  const rows=[];
+  P.parseFromString(z[ks[0]],'text/xml').querySelectorAll('row').forEach(r=>{const a=[];
+    r.querySelectorAll('c').forEach(c=>{let j=0;for(const ch of (c.getAttribute('r')||'').replace(/\d/g,''))j=j*26+ch.charCodeAt(0)-64;j--;
+      const t=c.getAttribute('t');let v;if(t==='inlineStr')v=c.textContent;else{const x=c.querySelector('v')?.textContent??'';v=t==='s'?ss[+x]:x}a[j<0?a.length:j]=v});
+    rows.push(a)});
+  return rows;
+}
+function parseCSV(t){
+  t=t.replace(/^\uFEFF/,'');const f=t.split('\n')[0]||'';
+  const dl=[',',';','\t','،'].sort((a,b)=>f.split(b).length-f.split(a).length)[0];
+  const rows=[];let r=[],c='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+    else if(ch==='"')q=true;
+    else if(ch===dl){r.push(c);c=''}
+    else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;r.push(c);rows.push(r);r=[];c=''}
+    else c+=ch}
+  if(c||r.length){r.push(c);rows.push(r)}return rows;
+}
+const cleanN=s=>String(s).replace(/["“”«»'‘’]/g,'').replace(/^[\s\d٠-٩.\-–)(:،]+/,'').replace(/\s+/g,' ').trim();
+const isLetters=s=>/[\u0600-\u06FFA-Za-z]{2,}/.test(s||'');
+function namesFrom(rows){
+  rows=rows.map(r=>Array.from(r,x=>String(x??'').trim())).filter(r=>r.some(Boolean));if(!rows.length)return[];
+  const isH=s=>/^(ال)?(اسم|أسم|طالب|اسماء|أسماء)|name|student/i.test(s);
+  let ci=-1,st=0;
+  for(let i=0;i<Math.min(3,rows.length)&&ci<0;i++)rows[i].forEach((c,j)=>{if(ci<0&&isH(cleanN(c))){ci=j;st=i+1}});
+  if(ci<0){let bs=0;const w=Math.max(...rows.map(r=>r.length));
+    for(let j=0;j<w;j++){const s=new Set(rows.filter(r=>isLetters(r[j])).map(r=>cleanN(r[j]))).size;if(s>bs){bs=s;ci=j}}}
+  if(ci<0)return[];
+  return rows.slice(st).map(r=>cleanN(r[ci]||'')).filter(isLetters);
+}
+function doPrint(html,land){$('#pg').textContent=`@page{size:A4 ${land?'landscape':'portrait'};margin:10mm}`;$('#pr').innerHTML=html;window.print()}
+window.onafterprint=()=>{$('#pr').innerHTML=''};
+const dayH=d=>`${d.w} ${nf(d.d)}/${nf(d.m)}`;
+
+Object.assign(A,{
+ async editCol(){const k=await pickOne('اختر العمود',S.cols.map(c=>[c,c]));if(!k)return;const n=await ask('الرمز الجديد',k);if(!n||n===k)return;
+  if(S.cols.includes(n)||n.includes('|'))return alert('الرمز مكرر أو غير صالح');
+  S.cols[S.cols.indexOf(k)]=n;
+  Object.keys(S.marks).forEach(m=>{if(m.endsWith('|'+k)){S.marks[m.slice(0,-k.length)+n]=1;delete S.marks[m]}})},
+ async delCol(){if(S.cols.length<2)return alert('لا يمكن حذف العمود الأخير');const k=await pickOne('اختر العمود للحذف',S.cols.map(c=>[c,c]));if(!k)return;
+  if(!confirm(`حذف العمود ${k} وجميع علاماته؟`))return;
+  S.cols=S.cols.filter(c=>c!==k);Object.keys(S.marks).forEach(m=>{if(m.endsWith('|'+k))delete S.marks[m]})},
+ async impNames(){const c=cls();if(!c)return alert('اختر فصلاً أولاً');
+  const f=await pickFile('.csv,.txt,.xlsx,text/csv,text/plain');if(!f)return;
+  let rows;try{const b=await f.arrayBuffer();
+    if(/\.xlsx$/i.test(f.name))rows=await xlsxRows(b);
+    else if(/\.xls$/i.test(f.name))return alert('صيغة xls القديمة غير مدعومة. احفظ الملف بصيغة xlsx أو csv ثم أعد المحاولة.');
+    else{let t;try{t=new TextDecoder('utf-8',{fatal:true}).decode(b)}catch(e){t=new TextDecoder('windows-1256').decode(b)}rows=parseCSV(t)}
+  }catch(e){return alert('تعذّرت قراءة الملف')}
+  const names=namesFrom(rows);if(!names.length)return alert('لم أجد أسماء في الملف');
+  const r=await dlg(`تم العثور على ${nf(names.length)} اسم`,'<div style="font-size:13px;color:var(--mut);margin-bottom:6px">راجع الأسماء وعدّلها إن لزم (اسم في كل سطر). المكرر لا يُضاف.</div><textarea id=tx rows=10>'+esc(names.join('\n'))+'</textarea>',m=>m.querySelector('#tx').value);
+  if(!r)return;const have=new Set(c.st.map(s=>AK(s.n)));let add=0;
+  r.split('\n').map(cleanN).filter(Boolean).forEach(n=>{if(!have.has(AK(n))){have.add(AK(n));c.st.push({id:'s'+uid(),n});add++}});
+  alert(`أُضيف ${nf(add)} طالب`)},
+ exp(){dl(`mutabaa-${S.month}.json`,JSON.stringify({...S,timers:[]}),'application/json')},
+ async imp(){const f=await pickFile('.json,application/json');if(!f)return;let o;
+  try{o=JSON.parse(await f.text());if(!Array.isArray(o.classes)||!Array.isArray(o.cols)||!Array.isArray(o.days)||typeof o.marks!=='object')throw 0}catch(e){return alert('الملف غير صالح')}
+  if(!confirm('سيتم استبدال جميع البيانات الحالية بالملف. متابعة؟'))return;
+  S=o;S.timers=[];S.arch=S.arch||{};if(!S.classes.some(c=>c.id===S.cur))S.cur=S.classes[0]?.id;rollover();chips()},
+ prCls(){const c=cls();if(!c||!c.st.length)return alert('لا يوجد طلاب للطباعة');sortC(c);
+  const n=S.cols.length,per=Math.max(1,Math.floor(215/(n*6.5)));let h='';
+  for(let i=0;i<S.days.length;i+=per){const ds=S.days.slice(i,i+per);
+    h+=`<table class=pt><caption>${esc(c.name)} · ${esc(S.mname)}</caption><tr><th rowspan=2>#</th><th rowspan=2>الاسم</th>${ds.map(d=>`<th colspan=${n}>${dayH(d)}</th>`).join('')}</tr><tr>${ds.map(()=>S.cols.map(k=>`<th>${esc(k)}</th>`).join('')).join('')}</tr>`;
+    c.st.forEach((s,j)=>{h+=`<tr><td>${nf(j+1)}</td><td class=l>${esc(s.n)}</td>${ds.map(d=>S.cols.map(k=>`<td>${S.marks[`${s.id}|${d.k}|${k}`]?esc(k):''}</td>`).join('')).join('')}</tr>`});
+    h+='</table>'}
+  doPrint(h,1)},
+ async prStu(){const id=await pickOne('اختر الطالب للطباعة',stuItems());if(!id)return;const c=cls(),s=c.st.find(x=>x.id===id);
+  const has=(d,k)=>S.marks[`${s.id}|${d.k}|${k}`];
+  let h=`<table class=pt><caption>${esc(s.n)} · ${esc(c.name)} · ${esc(S.mname)}</caption><tr><th>اليوم</th>${S.cols.map(k=>`<th>${esc(k)}</th>`).join('')}</tr>`;
+  S.days.forEach(d=>h+=`<tr><td class=l>${dayH(d)}</td>${S.cols.map(k=>`<td>${has(d,k)?esc(k):''}</td>`).join('')}</tr>`);
+  h+=`<tr style="font-weight:700"><td class=l>المجموع</td>${S.cols.map(k=>`<td>${nf(S.days.filter(d=>has(d,k)).length)}</td>`).join('')}</tr></table>`;
+  doPrint(h,0)}
+});
+const MENU=[['الفصول'],['إضافة فصل','addClass'],['تعديل الفصل الحالي','editClass'],['حذف الفصل الحالي','delClass'],
+ ['الطلاب'],['إضافة طالب','addStu'],['استيراد أسماء (Excel / CSV)','impNames'],['تعديل طالب','editStu'],['نقل طالب','moveStu'],['حذف طالب','delStu'],
+ ['الأعمدة والإحصائيات'],['إضافة عمود','addCol'],['تعديل عمود','editCol'],['حذف عمود','delCol'],['إحصائيات: كل الفصول','stAll'],['إحصائيات: هذا الفصل','stCls'],['إحصائيات: طالب','stStu'],['الأرشيف','archive'],
+ ['الطباعة والبيانات'],['طباعة: هذا الفصل','prCls'],['طباعة: طالب','prStu'],['تصدير البيانات','exp'],['استيراد البيانات','imp']];
+function drawer(){
+  let h='<h4>الفصل</h4>'+S.classes.map(c=>`<button class="cl ${c.id===S.cur?'on':''}" data-c="${c.id}">${esc(c.name)}</button>`).join('');
+  MENU.forEach(m=>h+=m[1]?`<button data-a="${m[1]}">${m[0]}</button>`:`<h4>${m[0]}</h4>`);
+  $('#nv').innerHTML=h;
+}
+$('#mb').onclick=()=>{drawer();$('#dr').classList.add('o')};
+$('#dr').onclick=async e=>{
+  const b=e.target.closest('button');
+  if(!b){if(e.target.id==='dr')$('#dr').classList.remove('o');return}
+  $('#dr').classList.remove('o');
+  if(b.dataset.c){S.cur=b.dataset.c}else{await A[b.dataset.a]()}
+  save();render();
+};
+
+/* ---------- الاستئذان ---------- */
+$('#pm').onclick=async()=>{
+  if(!stuItems().length)return alert('اختر فصلاً فيه طلاب أولاً');
+  const ids=await pickMany('من خرج؟ (يمكن اختيار أكثر من طالب)',stuItems());
+  if(!ids||!ids.length)return;
+  const c=cls();S.timers.push({id:uid(),names:ids.map(i=>c.st.find(s=>s.id===i).n),t0:Date.now(),t1:0});save();chips();
+};
+function chips(){
+  $('#fl').innerHTML=S.timers.map(t=>`<div class="chip" data-t="${t.id}"><b></b><span></span></div>`).join('');tick();
+}
+function tick(){
+  S.timers.forEach(t=>{
+    const el=document.querySelector(`[data-t="${t.id}"]`);if(!el)return;
+    const sec=Math.floor(((t.t1||Date.now())-t.t0)/1000),m=Math.floor(sec/60);
+    const st=m<5?1:m<10?2:m<15?3:4;
+    el.className=`chip s${st}${t.t1?' x':''}`;
+    el.firstChild.textContent=String(m).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+    const nm=t.names.length>1?`${t.names[0]} +${nf(t.names.length-1)}`:t.names[0];
+    el.lastChild.textContent=(st===4?'خرج ولم يعد · ':'')+nm+(t.t1?' · اضغط للإزالة':'');
+  });
+}
+$('#fl').onclick=e=>{
+  const el=e.target.closest('.chip');if(!el)return;
+  const t=S.timers.find(x=>x.id===el.dataset.t);if(!t)return;
+  if(!t.t1)t.t1=Date.now();else S.timers=S.timers.filter(x=>x!==t);
+  save();chips();
+};
+setInterval(tick,1000);
+
+/* ---------- تشغيل ---------- */
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){rollover();render();tick()}});
+rollover();render();chips();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
