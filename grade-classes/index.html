@@ -16,7 +16,9 @@
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:system-ui,"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;overscroll-behavior:none}
 body{position:fixed;inset:0;display:flex;flex-direction:column}
 header{flex:none;height:48px;margin-top:env(safe-area-inset-top);background:var(--ink);color:#fff;display:flex;align-items:center;gap:6px;padding:0 6px}
-header h1{flex:1;font-size:16px;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header h1{flex:1;min-width:0;margin:0;font-weight:600;display:flex;flex-direction:column;justify-content:center;line-height:1.2;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+header h1 small{font-size:11px;opacity:.8;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header h1 span{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header button{background:none;border:0;color:#fff;font-size:22px;width:42px;height:42px;border-radius:8px}
 header button:active{background:#ffffff26}
 main{flex:1;min-height:0;overflow:auto;position:relative;overscroll-behavior:none;-webkit-overflow-scrolling:touch}
@@ -40,6 +42,8 @@ tfoot td{background:var(--bg);color:var(--mut);font-size:12px;height:28px}
 td.pm{min-width:54px;font-size:13px;font-variant-numeric:tabular-nums}
 td.pm.s1{background:#2a9d62;color:#fff}td.pm.s2{background:#e0a100;color:#fff}td.pm.s3{background:#d62828;color:#fff}td.pm.s4{background:#5b2a86;color:#fff}
 td.pm.run{outline:2px solid #fff9;outline-offset:-3px}
+th.dh{cursor:pointer}
+#mn td.hl{background:repeating-linear-gradient(45deg,var(--bg),var(--bg) 6px,var(--card) 6px,var(--card) 12px)!important;color:var(--mut)!important}
 .empty{padding:40px 20px;text-align:center;color:var(--mut);line-height:2}
 #dr{position:fixed;inset:calc(48px + env(safe-area-inset-top)) 0 0 0;background:#0007;z-index:20;display:none}
 #dr.o{display:block}
@@ -81,6 +85,7 @@ html,body{height:auto;overflow:visible;background:#fff}body{position:static!impo
 <header>
  <button id="mb" aria-label="القائمة">☰</button>
  <h1 id="ti"></h1>
+ <button id="bk" hidden aria-label="رجوع للأسبوع الحالي">↩</button>
 </header>
 <main id="mn"></main>
 <div id="fl"></div>
@@ -94,7 +99,7 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const KEY='mutabaa1';
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 S=S||{classes:['٣-١','٣-٢','٣-٣'].map((n,i)=>({id:'c'+i,name:n,st:[]})),cur:'c0',cols:['غ','ت','م','ك','ق','ن','س','x'],days:[],marks:{},month:'',mname:'',arch:{},timers:[]};
-const norm=()=>{S.perm=S.perm||{};S.cpos=S.cpos||{};S.pi=S.pi??Math.min(8,S.cols.length)};norm();
+const norm=()=>{S.anchor=S.anchor||{start:'2026-10-25',n:10};S.sem=S.sem||1;S.hol=S.hol||{};S.dhol=S.dhol||{};S.warch=S.warch||{};S.wk=S.wk||'';S.perm=S.perm||{};S.cpos=S.cpos||{};S.pi=S.pi??Math.min(8,S.cols.length)};norm();
 const rmS=id=>[S.marks,S.perm].forEach(o=>Object.keys(o).forEach(k=>{if(k.startsWith(id+'|'))delete o[k]}));
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 const cls=()=>S.classes.find(c=>c.id===S.cur);
@@ -102,16 +107,38 @@ const nf=n=>new Intl.NumberFormat('ar-SA-u-nu-arab').format(n);
 
 /* ---------- التاريخ الهجري والأرشفة ---------- */
 function hijri(d=new Date()){const o={};new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'}).formatToParts(d).forEach(p=>o[p.type]=p.value);return o}
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const addD=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const sunday=(d=new Date())=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12);x.setDate(x.getDate()-x.getDay());return iso(x)};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const hkey=d=>{const p=hijri(d);return p.year+'-'+pad(p.month)+'-'+pad(p.day)};
 function rollover(){
-  const d=new Date(),p=hijri(d),mk=p.year+'-'+p.month.padStart(2,'0');
-  if(S.month!==mk){
-    if(S.month&&S.days.length)S.arch[S.month]={name:S.mname,classes:JSON.parse(JSON.stringify(S.classes)),cols:[...S.cols],days:S.days,marks:S.marks,perm:S.perm,pi:S.pi};
-    S.days=[];S.marks={};S.perm={};S.month=mk;
-    S.mname=new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab',{month:'long',year:'numeric'}).format(d);
+  if(!S.wk){ // ترحيل بيانات الشهر القديمة (قبل نظام الأسابيع) إلى الأرشيف
+    if(S.month&&(S.days.length||Object.keys(S.marks).length))S.arch[S.month]={name:S.mname,classes:clone(S.classes),cols:[...S.cols],days:S.days,marks:S.marks,perm:S.perm,pi:S.pi};
+    S.days=[];S.marks={};S.perm={};S.month='';S.mname='';
   }
-  const dk=mk+'-'+p.day.padStart(2,'0');
-  if(!S.days.find(x=>x.k===dk))S.days.push({k:dk,w:d.toLocaleDateString('ar',{weekday:'short'}),d:+p.day,m:+p.month});
+  const ws=sunday();
+  if(S.wk!==ws){
+    if(S.wk&&(Object.keys(S.marks).length||Object.keys(S.perm).length||S.hol[S.wk]||S.days.some(d=>S.dhol[d.k])))
+      S.warch[S.wk]={wk:S.wk,sem:S.sem,classes:clone(S.classes),cols:[...S.cols],pi:S.pi,days:S.days,marks:S.marks,perm:S.perm};
+    S.wk=ws;S.marks={};S.perm={};S.cpos={};
+    S.days=[0,1,2,3,4].map(i=>{const g=new Date(addD(ws,i)+'T12:00:00'),p=hijri(g);
+      return{k:hkey(g),w:g.toLocaleDateString('ar',{weekday:'long'}),d:+p.day,m:+p.month}});
+  }
   save();
+}
+/* رقم الأسبوع: يُحسب من الأساس، والأسبوع الإجازة لا يزيد الرقم */
+function weekNum(start){
+  let n=S.anchor.n;const a=S.anchor.start;
+  if(start>=a){for(let s=a;s<start;s=addD(s,7))if(!S.hol[s])n++}
+  else{for(let s=addD(a,-7);s>=start;s=addD(s,-7))if(!S.hol[s])n--}
+  return n;
+}
+const ORD=['','الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر','الحادي عشر','الثاني عشر','الثالث عشر','الرابع عشر','الخامس عشر','السادس عشر','السابع عشر','الثامن عشر','التاسع عشر','العشرون'];
+function wkTitle(start,sem){
+  const n=weekNum(start),w=n>=1&&n<=20?'الأسبوع '+ORD[n]:'الأسبوع '+nf(n);
+  return `${w} ${sem===2?'الفصل الدراسي الثاني':'الفصل الدراسي الأول'} ${hijri(new Date(start+'T12:00:00')).year} هـ`;
 }
 
 /* ---------- الترتيب الأبجدي ---------- */
@@ -120,36 +147,44 @@ const COL=new Intl.Collator('ar');
 const srt=(a,b)=>COL.compare(AK(a.n),AK(b.n));
 const sortC=c=>c.st.sort(srt);
 /* ---------- العرض ---------- */
+let VIEW=null;
+const D=()=>VIEW?S.warch[VIEW]:S;
+const vc=()=>VIEW?D().classes.find(c=>c.id===S.cur):cls();
+const isHol=(X,d)=>!!(S.hol[X.wk]||S.dhol[d.k]);
 const LY=(sn=S)=>{const a=[...sn.cols];a.splice(sn.pi??Math.min(8,a.length),0,null);return a};
 const stg=m=>m<5?1:m<10?2:m<15?3:4;
 const psec=p=>Math.max(0,Math.floor(((p.t1||Date.now())-p.t0)/1000));
 const pfmt=p=>{const s=psec(p);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 const pcls=p=>`pm s${stg(Math.floor(psec(p)/60))}${p.t1?'':' run'}`;
+const setP=(td,p)=>{const hl=td.classList.contains('hl')?' hl':'';td.className='c '+(p?pcls(p):'pm')+hl;td.textContent=p?pfmt(p):''};
 function render(){
-  const c=cls();if(c)sortC(c);
-  $('#ti').textContent=c?`${c.name} · ${S.mname}`:'متابعة';
+  const X=D(),c=vc();if(c)sortC(c);
+  $('#ti').innerHTML=(c?`<small>${esc(c.name)}${VIEW?' · أرشيف (للقراءة فقط)':''}</small>`:'')+`<span>${wkTitle(X.wk,X.sem)}</span>`;
+  $('#bk').hidden=!VIEW;
   const mn=$('#mn');
-  if(!c){mn.innerHTML='<div class=empty>لا توجد فصول.<br>افتح القائمة ثم أضف فصلاً.</div>';return}
+  if(!c){mn.innerHTML='<div class=empty>'+(VIEW?'هذا الفصل لم يكن موجودًا في ذلك الأسبوع.':'لا توجد فصول.<br>افتح القائمة ثم أضف فصلاً.')+'</div>';return}
   if(!c.st.length){mn.innerHTML='<div class=empty>لا يوجد طلاب في هذا الفصل.<br>افتح القائمة ← إضافة طالب.</div>';return}
-  const L=LY(),n=L.length,KI=L.map(k=>k===null?-1:S.cols.indexOf(k));
+  const L=LY(X),n=L.length,KI=L.map(k=>k===null?-1:X.cols.indexOf(k));
   let h='<table><thead><tr><th class="n" rowspan=2>#</th><th class="nm" rowspan=2>الاسم</th>';
-  S.days.forEach(d=>h+=`<th class=dh data-k="${d.k}" colspan=${n}>${d.w} ${nf(d.d)}/${nf(d.m)}</th>`);
+  X.days.forEach(d=>h+=`<th class=dh data-k="${d.k}" colspan=${n}>${d.w} ${nf(d.d)}/${nf(d.m)}${isHol(X,d)?' · إجازة':''}</th>`);
   h+='</tr><tr>';
-  S.days.forEach(()=>L.forEach(k=>h+=`<th>${k===null?'⏱':esc(k)}</th>`));
+  X.days.forEach(()=>L.forEach(k=>h+=`<th>${k===null?'⏱':esc(k)}</th>`));
   h+='</tr></thead><tbody>';
   c.st.forEach((s,i)=>{
     h+=`<tr><td class=n>${nf(i+1)}</td><td class=nm>${esc(s.n)}</td>`;
-    S.days.forEach(d=>L.forEach((k,j)=>{
-      if(k===null){const p=S.perm[s.id+'|'+d.k];h+=`<td class="c ${p?pcls(p):'pm'}" data-p="${s.id}|${d.k}">${p?pfmt(p):''}</td>`}
-      else{const on=S.marks[`${s.id}|${d.k}|${k}`];h+=`<td class="c k${KI[j]%8}" data-s="${s.id}" data-d="${d.k}" data-c="${esc(k)}">${on?esc(k):''}</td>`}}));
+    X.days.forEach(d=>{const hl=isHol(X,d)?' hl':'';L.forEach((k,j)=>{
+      if(k===null){const p=X.perm[s.id+'|'+d.k];h+=`<td class="c ${p?pcls(p):'pm'}${hl}" data-p="${s.id}|${d.k}">${p?pfmt(p):''}</td>`}
+      else{const on=X.marks[`${s.id}|${d.k}|${k}`];h+=`<td class="c k${KI[j]%8}${hl}" data-s="${s.id}" data-d="${d.k}" data-c="${esc(k)}">${on?esc(k):''}</td>`}})});
     h+='</tr>';
   });
   h+=`</tbody><tfoot><tr><td class=n></td><td class=nm style="background:var(--bg)">عدد: ${nf(c.st.length)}</td>`;
-  S.days.forEach(d=>L.forEach(k=>h+='<td></td>'));
+  X.days.forEach(d=>L.forEach(k=>h+='<td></td>'));
   mn.innerHTML=h+'</tr></tfoot></table><div style="height:calc(130px + env(safe-area-inset-bottom))"></div>';render2();focusToday();
 }
 $('#mn').addEventListener('click',e=>{
-  const t=e.target.closest('td.c');if(!t)return;
+  const t=e.target.closest('td.c');if(!t||VIEW)return;
+  const dk=t.dataset.p?t.dataset.p.split('|')[1]:t.dataset.d;
+  if(S.hol[S.wk]||S.dhol[dk])return; // إجازة: تجاهل الضغط
   if(t.dataset.p){
     const pk=t.dataset.p,p=S.perm[pk];
     if(!p)S.perm[pk]={t0:Date.now(),t1:0};
@@ -161,33 +196,57 @@ $('#mn').addEventListener('click',e=>{
   if(S.marks[k]){delete S.marks[k];t.textContent=''}else{S.marks[k]=1;t.textContent=t.dataset.c}
   save();render2();
 });
+/* الضغط على رأس اليوم: إجازة لهذا اليوم */
+$('#mn').addEventListener('click',async e=>{
+  const th=e.target.closest('th.dh');if(!th||VIEW)return;
+  if(S.hol[S.wk])return alert('هذا الأسبوع إجازة. لإلغائه اضغط ضغطة مطوّلة على العنوان في الأعلى.');
+  const k=th.dataset.k,on=!!S.dhol[k];
+  if(!(await yn(on?'هذا اليوم إجازة. هل تريد إلغاء الإجازة؟':'هل هو يوم إجازة؟')))return;
+  if(on)delete S.dhol[k];else S.dhol[k]=1;
+  save();const mn=$('#mn'),a=mn.scrollLeft,b=mn.scrollTop;render();mn.scrollLeft=a;mn.scrollTop=b;
+});
+/* الضغط المطوّل على العنوان: إجازة للأسبوع */
+async function toggleWkHol(){
+  const on=!!S.hol[S.wk];
+  if(!(await yn(on?'هذا الأسبوع إجازة. هل تريد إلغاء الإجازة؟':'هل تريد وضع هذا الأسبوع «إجازة»؟')))return;
+  if(on)delete S.hol[S.wk];else S.hol[S.wk]=1;
+  save();render();
+}
+let lp=null;
+$('#ti').addEventListener('pointerdown',()=>{if(VIEW)return;clearTimeout(lp);lp=setTimeout(()=>{lp=null;toggleWkHol()},650)});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>$('#ti').addEventListener(ev,()=>{clearTimeout(lp);lp=null}));
+$('#ti').addEventListener('contextmenu',e=>e.preventDefault());
+$('#bk').onclick=()=>{VIEW=null;render()};
 function focusToday(){
-  const mn=$('#mn'),tk=S.month+'-'+String(hijri().day).padStart(2,'0');
-  const th=mn.querySelector(`th.dh[data-k="${tk}"]`),nm=mn.querySelector('th.nm');if(!th||!nm)return;
+  if(VIEW)return;
+  const mn=$('#mn'),tk=hkey(new Date());
+  const ths=mn.querySelectorAll('th.dh'),nm=mn.querySelector('th.nm');if(!ths.length||!nm)return;
+  const th=mn.querySelector(`th.dh[data-k="${tk}"]`)||ths[ths.length-1];
   mn.scrollLeft+=th.getBoundingClientRect().right-nm.getBoundingClientRect().left;
 }
-function render2(){ // تحديث خلايا الاستئذان وصف العدد دون إعادة بناء الجدول (حفظاً لموضع السكرول)
-  const c=cls();if(!c)return;
-  document.querySelectorAll('td[data-p]').forEach(td=>{const p=S.perm[td.dataset.p];td.className=p?'c '+pcls(p):'c pm';td.textContent=p?pfmt(p):''});
+function render2(){
+  const X=D(),c=vc();if(!c)return;
+  document.querySelectorAll('td[data-p]').forEach(td=>setP(td,X.perm[td.dataset.p]));
   const f=document.querySelector('tfoot tr');if(!f)return;
   const cells=[...f.children].slice(2);let i=0;
-  S.days.forEach(d=>LY().forEach(k=>{
-    const t=c.st.filter(s=>k===null?S.perm[s.id+'|'+d.k]:S.marks[`${s.id}|${d.k}|${k}`]).length;
+  X.days.forEach(d=>LY(X).forEach(k=>{
+    const t=c.st.filter(s=>k===null?X.perm[s.id+'|'+d.k]:X.marks[`${s.id}|${d.k}|${k}`]).length;
     cells[i++].textContent=t?nf(t):''}));
 }
 
 /* ---------- نوافذ ---------- */
-function dlg(t,inner,get,single){return new Promise(r=>{
+function dlg(t,inner,get,single,lab=['موافق','إلغاء']){return new Promise(r=>{
   const m=$('#m');
-  m.innerHTML=`<div class=bx><h3>${t}</h3>${inner}<div class=bt><button id=ok>${single?'إغلاق':'موافق'}</button>${single?'':'<button id=no class=g>إلغاء</button>'}</div></div>`;
+  m.innerHTML=`<div class=bx><h3>${t}</h3>${inner}<div class=bt><button id=ok>${single?'إغلاق':lab[0]}</button>${single?'':`<button id=no class=g>${lab[1]}</button>`}</div></div>`;
   m.hidden=false;const done=v=>{m.hidden=true;r(v)};
   $('#ok').onclick=()=>done(get?get(m):true);
   if(!single)$('#no').onclick=()=>done(null);
 })}
+const yn=t=>dlg(t,'',()=>true,0,['نعم','لا']);
 const pickOne=(t,items)=>dlg(t,`<select id=sel>${items.map(i=>`<option value="${i[0]}">${esc(i[1])}</option>`).join('')}</select>`,m=>m.querySelector('#sel').value);
 const pickMany=(t,items)=>dlg(t,items.map(i=>`<label><input type=checkbox value="${i[0]}">${esc(i[1])}</label>`).join(''),m=>[...m.querySelectorAll('input:checked')].map(x=>x.value));
 const ask=(t,v='')=>dlg(t,`<input type=text id=tx value="${esc(v)}">`,m=>m.querySelector('#tx').value.trim());
-const stuItems=()=>{const c=cls();return c?c.st.map(s=>[s.id,s.n]):[]};
+const stuItems=()=>{const c=vc();return c?c.st.map(s=>[s.id,s.n]):[]};
 
 /* ---------- الإحصائيات ---------- */
 function statHTML(snap,classes,onlyS){
@@ -206,7 +265,14 @@ function statHTML(snap,classes,onlyS){
   });
   return h;
 }
-const live=()=>({days:S.days,marks:S.marks,cols:S.cols,perm:S.perm});
+const snapWeek=()=>({days:S.days.filter(d=>!isHol(S,d)),marks:S.marks,cols:S.cols,perm:S.perm});
+function snapAll(){
+  const days=[],marks={},perm={};
+  const add=X=>{X.days.forEach(d=>{if(!isHol(X,d))days.push(d)});Object.assign(marks,X.marks);Object.assign(perm,X.perm)};
+  Object.keys(S.warch).sort().forEach(k=>{if(S.warch[k].sem===S.sem)add(S.warch[k])});add(S);
+  return{days,marks,cols:S.cols,perm};
+}
+const statSnap=async()=>{const k=await pickOne('الإحصائيات على',[['w','هذا الأسبوع'],['t','تراكمية — كل أسابيع هذا الفصل الدراسي']]);return k?(k==='w'?snapWeek():snapAll()):null};
 
 /* ---------- الإجراءات ---------- */
 const A={
@@ -225,11 +291,25 @@ const A={
  async delStu(){const id=await pickOne('اختر الطالب للحذف',stuItems());if(!id)return;const f=cls(),s=f.st.find(x=>x.id===id);
   if(!confirm(`حذف الطالب ${s.n}؟`))return;f.st=f.st.filter(x=>x!==s);rmS(id)},
  async addCol(){const n=await ask('رمز العمود الجديد (حرف أو كلمة قصيرة)');if(!n)return;if(S.cols.includes(n)||n.includes('|'))return alert('الرمز مكرر أو غير صالح');S.cols.push(n)},
- async stAll(){await dlg('إحصائيات جميع الفصول · '+esc(S.mname),statHTML(live(),S.classes),null,1)},
- async stCls(){const c=cls();if(c)await dlg('إحصائيات '+esc(c.name),statHTML(live(),[c]),null,1)},
- async stStu(){const id=await pickOne('اختر الطالب',stuItems());if(id)await dlg('إحصائيات طالب',statHTML(live(),[cls()],id),null,1)},
- async archive(){const ks=Object.keys(S.arch).sort().reverse();if(!ks.length)return alert('لا يوجد أرشيف بعد. يُحفظ الشهر تلقائياً عند بدء شهر هجري جديد.');
-  const k=await pickOne('اختر الشهر',ks.map(k=>[k,S.arch[k].name||k]));if(!k)return;const a=S.arch[k];await dlg('أرشيف '+esc(a.name||k),statHTML(a,a.classes),null,1)}
+ async stAll(){const sn=await statSnap();if(sn)await dlg('إحصائيات جميع الفصول',statHTML(sn,S.classes),null,1)},
+ async stCls(){const c=cls();if(!c)return;const sn=await statSnap();if(sn)await dlg('إحصائيات '+esc(c.name),statHTML(sn,[c]),null,1)},
+ async stStu(){const id=await pickOne('اختر الطالب',stuItems());if(!id)return;const sn=await statSnap();if(sn)await dlg('إحصائيات طالب',statHTML(sn,[vc()],id),null,1)},
+ async setSem(){const v=await pickOne('الفصل الدراسي',[['1','الفصل الدراسي الأول'],['2','الفصل الدراسي الثاني']]);if(v)S.sem=+v},
+ async setWk(){const r=await ask('رقم الأسبوع الحالي',String(weekNum(S.wk)));if(!r)return;
+  const n=parseInt(r.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)),10);
+  if(!(n>=1&&n<=60))return alert('أدخل رقمًا بين 1 و60');S.anchor={start:S.wk,n}},
+ async wkHol(){await toggleWkHol()},
+ async archive(){
+  const ws=Object.keys(S.warch).sort().reverse(),ms=Object.keys(S.arch).sort().reverse();
+  if(!ws.length&&!ms.length)return alert('لا يوجد أرشيف بعد. يُحفظ كل أسبوع تلقائياً مع بداية يوم الأحد.');
+  const k=await pickOne('اختر من الأرشيف',[...ws.map(w=>['w:'+w,wkTitle(w,S.warch[w].sem)+(S.hol[w]?' — إجازة':'')]),...ms.map(m=>['m:'+m,'شهر (قديم): '+(S.arch[m].name||m)])]);
+  if(!k)return;
+  if(k[0]==='m'){const a=S.arch[k.slice(2)];await dlg('أرشيف '+esc(a.name||k),statHTML(a,a.classes),null,1);return}
+  const w=k.slice(2),a=S.warch[w];
+  const t=await pickOne('ماذا تريد؟',[['v','عرض الجدول (قراءة فقط، ويمكن طباعته)'],['s','إحصائيات هذا الأسبوع']]);
+  if(t==='v')VIEW=w;
+  else if(t==='s')await dlg('إحصائيات الأسبوع'+(S.hol[w]?' (إجازة)':''),statHTML({...a,days:a.days.filter(d=>!isHol(a,d))},a.classes),null,1);
+ }
 };
 /* ---------- أدوات الملفات ---------- */
 const pickFile=acc=>new Promise(r=>{const i=$('#fi');i.value='';i.accept=acc;i.onchange=()=>r(i.files[0]||null);i.addEventListener('cancel',()=>r(null),{once:true});i.click()});
@@ -307,26 +387,27 @@ Object.assign(A,{
   if(!r)return;const have=new Set(c.st.map(s=>AK(s.n)));let add=0;
   r.split('\n').map(cleanN).filter(Boolean).forEach(n=>{if(!have.has(AK(n))){have.add(AK(n));c.st.push({id:'s'+uid(),n});add++}});
   alert(`أُضيف ${nf(add)} طالب`)},
- exp(){dl(`mutabaa-${S.month}.json`,JSON.stringify({...S,timers:[]}),'application/json')},
+ exp(){dl(`mutabaa-${S.wk}.json`,JSON.stringify({...S,timers:[]}),'application/json')},
  async imp(){const f=await pickFile('.json,application/json');if(!f)return;let o;
   try{o=JSON.parse(await f.text());if(!Array.isArray(o.classes)||!Array.isArray(o.cols)||!Array.isArray(o.days)||typeof o.marks!=='object')throw 0}catch(e){return alert('الملف غير صالح')}
   if(!confirm('سيتم استبدال جميع البيانات الحالية بالملف. متابعة؟'))return;
   S=o;S.timers=[];norm();S.arch=S.arch||{};if(!S.classes.some(c=>c.id===S.cur))S.cur=S.classes[0]?.id;rollover();chips()},
- prCls(){const c=cls();if(!c||!c.st.length)return alert('لا يوجد طلاب للطباعة');sortC(c);
-  const L=LY(),n=L.length,per=Math.max(1,Math.floor(215/(n*6.5)));let h='';
-  for(let i=0;i<S.days.length;i+=per){const ds=S.days.slice(i,i+per);
-    h+=`<table class=pt><caption>${esc(c.name)} · ${esc(S.mname)}</caption><tr><th rowspan=2>#</th><th rowspan=2>الاسم</th>${ds.map(d=>`<th colspan=${n}>${dayH(d)}</th>`).join('')}</tr><tr>${ds.map(()=>L.map(k=>`<th>${k===null?'⏱':esc(k)}</th>`).join('')).join('')}</tr>`;
-    c.st.forEach((s,j)=>{h+=`<tr><td>${nf(j+1)}</td><td class=l>${esc(s.n)}</td>${ds.map(d=>L.map(k=>`<td>${k===null?pcell(s,d):S.marks[`${s.id}|${d.k}|${k}`]?esc(k):''}</td>`).join('')).join('')}</tr>`});
+ prCls(){const X=D(),c=vc();if(!c||!c.st.length)return alert('لا يوجد طلاب للطباعة');sortC(c);
+  const L=LY(X),n=L.length,per=5,pc=(s,d)=>{const p=X.perm[s.id+'|'+d.k];return p&&p.t1?pfmt(p):''};let h='';
+  for(let i=0;i<X.days.length;i+=per){const ds=X.days.slice(i,i+per);
+    h+=`<table class=pt><caption>${esc(c.name)} · ${wkTitle(X.wk,X.sem)}</caption><tr><th rowspan=2>#</th><th rowspan=2>الاسم</th>${ds.map(d=>`<th colspan=${n}>${dayH(d)}${isHol(X,d)?' · إجازة':''}</th>`).join('')}</tr><tr>${ds.map(()=>L.map(k=>`<th>${k===null?'⏱':esc(k)}</th>`).join('')).join('')}</tr>`;
+    c.st.forEach((s,j)=>{h+=`<tr><td>${nf(j+1)}</td><td class=l>${esc(s.n)}</td>${ds.map(d=>L.map(k=>`<td>${k===null?pc(s,d):X.marks[`${s.id}|${d.k}|${k}`]?esc(k):''}</td>`).join('')).join('')}</tr>`});
     h+='</table>'}
   doPrint(h,1)},
- async prStu(){const id=await pickOne('اختر الطالب للطباعة',stuItems());if(!id)return;const c=cls(),s=c.st.find(x=>x.id===id);
-  const L=LY(),has=(d,k)=>k===null?!!pcell(s,d):!!S.marks[`${s.id}|${d.k}|${k}`];
-  let h=`<table class=pt><caption>${esc(s.n)} · ${esc(c.name)} · ${esc(S.mname)}</caption><tr><th>اليوم</th>${L.map(k=>`<th>${k===null?'⏱':esc(k)}</th>`).join('')}</tr>`;
-  S.days.forEach(d=>h+=`<tr><td class=l>${dayH(d)}</td>${L.map(k=>`<td>${k===null?pcell(s,d):has(d,k)?esc(k):''}</td>`).join('')}</tr>`);
-  h+=`<tr style="font-weight:700"><td class=l>المجموع</td>${L.map(k=>`<td>${nf(S.days.filter(d=>has(d,k)).length)}</td>`).join('')}</tr></table>`;
+ async prStu(){const id=await pickOne('اختر الطالب للطباعة',stuItems());if(!id)return;const X=D(),c=vc(),s=c.st.find(x=>x.id===id);
+  const L=LY(X),pc=d=>{const p=X.perm[s.id+'|'+d.k];return p&&p.t1?pfmt(p):''},has=(d,k)=>k===null?!!pc(d):!!X.marks[`${s.id}|${d.k}|${k}`];
+  let h=`<table class=pt><caption>${esc(s.n)} · ${esc(c.name)} · ${wkTitle(X.wk,X.sem)}</caption><tr><th>اليوم</th>${L.map(k=>`<th>${k===null?'⏱':esc(k)}</th>`).join('')}</tr>`;
+  X.days.forEach(d=>h+=`<tr><td class=l>${dayH(d)}${isHol(X,d)?' · إجازة':''}</td>${L.map(k=>`<td>${k===null?pc(d):has(d,k)?esc(k):''}</td>`).join('')}</tr>`);
+  h+=`<tr style="font-weight:700"><td class=l>المجموع</td>${L.map(k=>`<td>${nf(X.days.filter(d=>has(d,k)).length)}</td>`).join('')}</tr></table>`;
   doPrint(h,0)}
 });
-const MENU=[['الفصول'],['إضافة فصل','addClass'],['تعديل الفصل الحالي','editClass'],['حذف الفصل الحالي','delClass'],
+const RO=['prCls','prStu','archive','stAll','stCls','stStu'];
+const MENU=[['الأسبوع'],['الفصل الدراسي (الأول / الثاني)','setSem'],['تعديل رقم الأسبوع الحالي','setWk'],['إجازة هذا الأسبوع (تفعيل / إلغاء)','wkHol'],['الفصول'],['إضافة فصل','addClass'],['تعديل الفصل الحالي','editClass'],['حذف الفصل الحالي','delClass'],
  ['الطلاب'],['إضافة طالب','addStu'],['استيراد أسماء (Excel / CSV)','impNames'],['تعديل طالب','editStu'],['نقل طالب','moveStu'],['حذف طالب','delStu'],
  ['الأعمدة والإحصائيات'],['إضافة عمود','addCol'],['تعديل عمود','editCol'],['حذف عمود','delCol'],['إحصائيات: كل الفصول','stAll'],['إحصائيات: هذا الفصل','stCls'],['إحصائيات: طالب','stStu'],['الأرشيف','archive'],
  ['الطباعة والبيانات'],['طباعة: هذا الفصل','prCls'],['طباعة: طالب','prStu'],['تصدير البيانات','exp'],['استيراد البيانات','imp']];
@@ -341,7 +422,7 @@ $('#dr').onclick=async e=>{
   const b=e.target.closest('button');
   if(!b){if(e.target.id==='dr')setDr(false);return}
   setDr(false);
-  if(b.dataset.c){S.cur=b.dataset.c}else{await A[b.dataset.a]()}
+  if(b.dataset.c){S.cur=b.dataset.c}else{if(!RO.includes(b.dataset.a))VIEW=null;await A[b.dataset.a]()}
   save();render();
 };
 
@@ -360,7 +441,7 @@ function tick(){
     const el=document.querySelector(`.chip[data-t="${k}"]`);
     if(el){el.className='chip s'+st;el.firstChild.textContent=pfmt(p);el.lastChild.textContent=(st===4?'خرج ولم يعد · ':'')+nameOf(k.split('|')[0])}
     const td=document.querySelector(`td[data-p="${k}"]`);
-    if(td){td.className='c '+pcls(p);td.textContent=pfmt(p)}
+    if(td)setP(td,p)
   });
 }
 let dg=null;
@@ -383,7 +464,7 @@ $('#fl').addEventListener('pointercancel',()=>{dg=null});
 setInterval(tick,1000);
 
 /* ---------- تشغيل ---------- */
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){rollover();render();tick()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){rollover();render();chips();tick()}});
 rollover();render();chips();requestAnimationFrame(focusToday);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
