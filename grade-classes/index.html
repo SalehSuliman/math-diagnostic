@@ -41,9 +41,9 @@ td.pm{min-width:54px;font-size:13px;font-variant-numeric:tabular-nums}
 td.pm.s1{background:#2a9d62;color:#fff}td.pm.s2{background:#e0a100;color:#fff}td.pm.s3{background:#d62828;color:#fff}td.pm.s4{background:#5b2a86;color:#fff}
 td.pm.run{outline:2px solid #fff9;outline-offset:-3px}
 .empty{padding:40px 20px;text-align:center;color:var(--mut);line-height:2}
-#dr{position:fixed;inset:0;background:#0007;z-index:20;display:none}
+#dr{position:fixed;inset:calc(48px + env(safe-area-inset-top)) 0 0 0;background:#0007;z-index:20;display:none}
 #dr.o{display:block}
-#dr nav{position:absolute;right:0;top:0;bottom:0;width:min(78vw,300px);background:var(--card);overflow:auto;padding:calc(10px + env(safe-area-inset-top)) 0 20px}
+#dr nav{position:absolute;right:0;top:0;bottom:0;width:min(78vw,300px);background:var(--card);overflow:auto;padding:6px 0 calc(24px + env(safe-area-inset-bottom))}
 #dr h4{margin:14px 16px 4px;font-size:12px;color:var(--mut);font-weight:600}
 #dr button{display:block;width:100%;text-align:right;background:none;border:0;color:var(--txt);font:inherit;font-size:15px;padding:11px 16px}
 #dr button:active{background:var(--bg)}
@@ -62,8 +62,8 @@ td.pm.run{outline:2px solid #fff9;outline-offset:-3px}
 .st th,.st td{position:static;border:1px solid var(--line);padding:5px 4px;height:auto;background:none}
 .st th{background:var(--ink);color:#fff}.st td:first-child{text-align:right}
 .st h5{margin:14px 0 0;font-size:15px}
-#fl{position:fixed;left:10px;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:15}
-.chip{min-width:130px;max-width:70vw;padding:9px 14px;border-radius:30px;color:#fff;box-shadow:0 4px 14px #0004;user-select:none;display:flex;flex-direction:column;line-height:1.35}
+#fl{position:fixed;inset:0;z-index:15;pointer-events:none}
+.chip{position:absolute;pointer-events:auto;touch-action:none;cursor:grab;min-width:130px;max-width:70vw;padding:9px 14px;border-radius:30px;color:#fff;box-shadow:0 4px 14px #0004;user-select:none;display:flex;flex-direction:column;line-height:1.35}
 .chip b{font-size:20px;font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
 .chip span{font-size:12px;opacity:.95}
 .s1{background:#2a9d62}.s2{background:#e0a100}.s3{background:#d62828}.s4{background:#5b2a86}
@@ -94,7 +94,7 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const KEY='mutabaa1';
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 S=S||{classes:['٣-١','٣-٢','٣-٣'].map((n,i)=>({id:'c'+i,name:n,st:[]})),cur:'c0',cols:['غ','ت','م','ك','ق','ن','س','x'],days:[],marks:{},month:'',mname:'',arch:{},timers:[]};
-const norm=()=>{S.perm=S.perm||{};S.pi=S.pi??Math.min(8,S.cols.length)};norm();
+const norm=()=>{S.perm=S.perm||{};S.cpos=S.cpos||{};S.pi=S.pi??Math.min(8,S.cols.length)};norm();
 const rmS=id=>[S.marks,S.perm].forEach(o=>Object.keys(o).forEach(k=>{if(k.startsWith(id+'|'))delete o[k]}));
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 const cls=()=>S.classes.find(c=>c.id===S.cur);
@@ -133,7 +133,7 @@ function render(){
   if(!c.st.length){mn.innerHTML='<div class=empty>لا يوجد طلاب في هذا الفصل.<br>افتح القائمة ← إضافة طالب.</div>';return}
   const L=LY(),n=L.length,KI=L.map(k=>k===null?-1:S.cols.indexOf(k));
   let h='<table><thead><tr><th class="n" rowspan=2>#</th><th class="nm" rowspan=2>الاسم</th>';
-  S.days.forEach(d=>h+=`<th class=dh colspan=${n}>${d.w} ${nf(d.d)}/${nf(d.m)}</th>`);
+  S.days.forEach(d=>h+=`<th class=dh data-k="${d.k}" colspan=${n}>${d.w} ${nf(d.d)}/${nf(d.m)}</th>`);
   h+='</tr><tr>';
   S.days.forEach(()=>L.forEach(k=>h+=`<th>${k===null?'⏱':esc(k)}</th>`));
   h+='</tr></thead><tbody>';
@@ -146,7 +146,7 @@ function render(){
   });
   h+=`</tbody><tfoot><tr><td class=n></td><td class=nm style="background:var(--bg)">عدد: ${nf(c.st.length)}</td>`;
   S.days.forEach(d=>L.forEach(k=>h+='<td></td>'));
-  mn.innerHTML=h+'</tr></tfoot></table>';render2();
+  mn.innerHTML=h+'</tr></tfoot></table><div style="height:calc(130px + env(safe-area-inset-bottom))"></div>';render2();focusToday();
 }
 $('#mn').addEventListener('click',e=>{
   const t=e.target.closest('td.c');if(!t)return;
@@ -161,6 +161,11 @@ $('#mn').addEventListener('click',e=>{
   if(S.marks[k]){delete S.marks[k];t.textContent=''}else{S.marks[k]=1;t.textContent=t.dataset.c}
   save();render2();
 });
+function focusToday(){
+  const mn=$('#mn'),tk=S.month+'-'+String(hijri().day).padStart(2,'0');
+  const th=mn.querySelector(`th.dh[data-k="${tk}"]`),nm=mn.querySelector('th.nm');if(!th||!nm)return;
+  mn.scrollLeft+=th.getBoundingClientRect().right-nm.getBoundingClientRect().left;
+}
 function render2(){ // تحديث خلايا الاستئذان وصف العدد دون إعادة بناء الجدول (حفظاً لموضع السكرول)
   const c=cls();if(!c)return;
   document.querySelectorAll('td[data-p]').forEach(td=>{const p=S.perm[td.dataset.p];td.className=p?'c '+pcls(p):'c pm';td.textContent=p?pfmt(p):''});
@@ -266,6 +271,7 @@ function parseCSV(t){
 }
 const cleanN=s=>String(s).replace(/["“”«»'‘’]/g,'').replace(/^[\s\d٠-٩.\-–)(:،]+/,'').replace(/\s+/g,' ').trim();
 const isLetters=s=>/[\u0600-\u06FFA-Za-z]{2,}/.test(s||'');
+const noBin=s=>s.replace(/(^|\s)بن(?=\s|$)/g,' ').replace(/\s+/g,' ').trim();
 function namesFrom(rows){
   rows=rows.map(r=>Array.from(r,x=>String(x??'').trim())).filter(r=>r.some(Boolean));if(!rows.length)return[];
   const isH=s=>/^(ال)?(اسم|أسم|طالب|اسماء|أسماء)|name|student/i.test(s);
@@ -274,7 +280,7 @@ function namesFrom(rows){
   if(ci<0){let bs=0;const w=Math.max(...rows.map(r=>r.length));
     for(let j=0;j<w;j++){const s=new Set(rows.filter(r=>isLetters(r[j])).map(r=>cleanN(r[j]))).size;if(s>bs){bs=s;ci=j}}}
   if(ci<0)return[];
-  return rows.slice(st).map(r=>cleanN(r[ci]||'')).filter(isLetters);
+  return rows.slice(st).map(r=>noBin(cleanN(r[ci]||''))).filter(isLetters);
 }
 function doPrint(html,land){$('#pg').textContent=`@page{size:A4 ${land?'landscape':'portrait'};margin:10mm}`;$('#pr').innerHTML=html;window.print()}
 window.onafterprint=()=>{$('#pr').innerHTML=''};
@@ -329,11 +335,12 @@ function drawer(){
   MENU.forEach(m=>h+=m[1]?`<button data-a="${m[1]}">${m[0]}</button>`:`<h4>${m[0]}</h4>`);
   $('#nv').innerHTML=h;
 }
-$('#mb').onclick=()=>{drawer();$('#dr').classList.add('o')};
+const setDr=o=>{$('#dr').classList.toggle('o',o);$('#mb').textContent=o?'✕':'☰'};
+$('#mb').onclick=()=>{const o=!$('#dr').classList.contains('o');if(o)drawer();setDr(o)};
 $('#dr').onclick=async e=>{
   const b=e.target.closest('button');
-  if(!b){if(e.target.id==='dr')$('#dr').classList.remove('o');return}
-  $('#dr').classList.remove('o');
+  if(!b){if(e.target.id==='dr')setDr(false);return}
+  setDr(false);
   if(b.dataset.c){S.cur=b.dataset.c}else{await A[b.dataset.a]()}
   save();render();
 };
@@ -342,7 +349,9 @@ $('#dr').onclick=async e=>{
 const nameOf=id=>{for(const c of S.classes){const s=c.st.find(x=>x.id===id);if(s)return s.n}return ''};
 function chips(){
   const run=Object.keys(S.perm).filter(k=>!S.perm[k].t1);
-  $('#fl').innerHTML=run.map(k=>`<div class="chip" data-t="${k}"><b></b><span></span></div>`).join('');tick();
+  $('#fl').innerHTML=run.map((k,i)=>{const q=S.cpos[k]||{x:10,y:innerHeight-150-i*66};
+    const x=Math.max(0,Math.min(innerWidth-140,q.x)),y=Math.max(0,Math.min(innerHeight-60,q.y));
+    return `<div class="chip" data-t="${k}" style="left:${x}px;top:${y}px"><b></b><span></span></div>`}).join('');tick();
 }
 function tick(){
   Object.keys(S.perm).forEach(k=>{
@@ -354,15 +363,28 @@ function tick(){
     if(td){td.className='c '+pcls(p);td.textContent=pfmt(p)}
   });
 }
-$('#fl').onclick=e=>{
-  const el=e.target.closest('.chip');if(!el)return;
-  const p=S.perm[el.dataset.t];if(p&&!p.t1){p.t1=Date.now();save();render2();chips()}
-};
+let dg=null;
+$('#fl').addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.chip');if(!el)return;el.setPointerCapture(e.pointerId);
+  const r=el.getBoundingClientRect();dg={el,k:el.dataset.t,dx:e.clientX-r.left,dy:e.clientY-r.top,sx:e.clientX,sy:e.clientY,moved:false};
+});
+$('#fl').addEventListener('pointermove',e=>{
+  if(!dg)return;if(!dg.moved&&Math.hypot(e.clientX-dg.sx,e.clientY-dg.sy)<8)return;
+  dg.moved=true;const el=dg.el;
+  dg.x=Math.max(0,Math.min(innerWidth-el.offsetWidth,e.clientX-dg.dx));dg.y=Math.max(0,Math.min(innerHeight-el.offsetHeight,e.clientY-dg.dy));
+  el.style.left=dg.x+'px';el.style.top=dg.y+'px';
+});
+$('#fl').addEventListener('pointerup',e=>{
+  if(!dg)return;const d=dg;dg=null;
+  if(d.moved){S.cpos[d.k]={x:d.x,y:d.y};save();return}
+  const p=S.perm[d.k];if(p&&!p.t1){p.t1=Date.now();delete S.cpos[d.k];save();render2();chips()}
+});
+$('#fl').addEventListener('pointercancel',()=>{dg=null});
 setInterval(tick,1000);
 
 /* ---------- تشغيل ---------- */
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){rollover();render();tick()}});
-rollover();render();chips();
+rollover();render();chips();requestAnimationFrame(focusToday);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
 </body>
