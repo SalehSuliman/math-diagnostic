@@ -44,6 +44,18 @@ td.pm.s1{background:#2a9d62;color:#fff}td.pm.s2{background:#e0a100;color:#fff}td
 td.pm.run{outline:2px solid #fff9;outline-offset:-3px}
 th.dh{cursor:pointer}
 #mn td.hl{background:repeating-linear-gradient(45deg,var(--bg),var(--bg) 6px,var(--card) 6px,var(--card) 12px)!important;color:var(--mut)!important}
+td.nl{background:var(--bg)}
+.bx.w{width:min(98vw,560px)}
+.sg{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.sg th,.sg td{border:1px solid var(--line);text-align:center;padding:4px 1px;height:38px;background:var(--card)}
+.sg th{background:var(--bg);font-weight:600}.sg th small{display:block;font-size:9px;color:var(--mut);font-weight:400}
+.sg td{cursor:pointer;font-weight:600;color:#fff;user-select:none}.sg td.e{color:var(--mut)}
+.brs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.brs button{flex:1;min-width:56px;padding:9px 4px;border:2px solid var(--c,var(--line));border-radius:8px;background:var(--card);color:var(--txt);font:inherit;font-weight:600}
+.brs button.on{background:var(--c,var(--ink));color:#fff}
+.cn{margin-top:8px;font-size:13px;line-height:1.9}
+.tr{display:flex;gap:6px;align-items:center;padding:5px 0}
+.tr input{flex:1;min-width:0;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--txt)}
 .empty{padding:40px 20px;text-align:center;color:var(--mut);line-height:2}
 #dr{position:fixed;inset:calc(48px + env(safe-area-inset-top)) 0 0 0;background:#0007;z-index:20;display:none}
 #dr.o{display:block}
@@ -99,7 +111,13 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const KEY='mutabaa1';
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 S=S||{classes:['٣-١','٣-٢','٣-٣'].map((n,i)=>({id:'c'+i,name:n,st:[]})),cur:'c0',cols:['غ','ت','م','ك','ق','ن','س','x'],days:[],marks:{},month:'',mname:'',arch:{},timers:[]};
-const norm=()=>{S.anchor=S.anchor||{start:'2026-10-25',n:10};S.sem=S.sem||1;S.hol=S.hol||{};S.dhol=S.dhol||{};S.warch=S.warch||{};S.wk=S.wk||'';S.perm=S.perm||{};S.cpos=S.cpos||{};S.pi=S.pi??Math.min(8,S.cols.length)};norm();
+const clone=o=>JSON.parse(JSON.stringify(o));
+const DT=[['07:15','08:00'],['08:00','08:45'],['08:45','09:30'],['09:50','10:35'],['10:35','11:15'],['11:15','12:00']];
+const migK=(m,pm)=>{for(const k of Object.keys(m)){const a=k.split('|');
+  if(!pm&&a.length===3){m[a[0]+'|'+a[1]+'|0|'+a[2]]=m[k];delete m[k]}
+  if(pm&&a.length===2){m[k+'|0']=m[k];delete m[k]}}};
+const norm=()=>{S.sl=S.sl||{};S.tsets=S.tsets||[{n:'الأوقات الافتراضية',t:clone(DT)}];S.tcur=S.tcur||0;
+  migK(S.marks,0);migK(S.perm||{},1);Object.values(S.warch||{}).forEach(w=>{migK(w.marks,0);migK(w.perm||{},1)});S.anchor=S.anchor||{start:'2026-10-25',n:10};S.sem=S.sem||1;S.hol=S.hol||{};S.dhol=S.dhol||{};S.warch=S.warch||{};S.wk=S.wk||'';S.perm=S.perm||{};S.cpos=S.cpos||{};S.pi=S.pi??Math.min(8,S.cols.length)};norm();
 const rmS=id=>[S.marks,S.perm].forEach(o=>Object.keys(o).forEach(k=>{if(k.startsWith(id+'|'))delete o[k]}));
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 const cls=()=>S.classes.find(c=>c.id===S.cur);
@@ -111,7 +129,6 @@ const pad=n=>String(n).padStart(2,'0');
 const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const addD=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)};
 const sunday=(d=new Date())=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12);x.setDate(x.getDate()-x.getDay());return iso(x)};
-const clone=o=>JSON.parse(JSON.stringify(o));
 const hkey=d=>{const p=hijri(d);return p.year+'-'+pad(p.month)+'-'+pad(p.day)};
 function rollover(){
   if(!S.wk){ // ترحيل بيانات الشهر القديمة (قبل نظام الأسابيع) إلى الأرشيف
@@ -121,7 +138,7 @@ function rollover(){
   const ws=sunday();
   if(S.wk!==ws){
     if(S.wk&&(Object.keys(S.marks).length||Object.keys(S.perm).length||S.hol[S.wk]||S.days.some(d=>S.dhol[d.k])))
-      S.warch[S.wk]={wk:S.wk,sem:S.sem,classes:clone(S.classes),cols:[...S.cols],pi:S.pi,days:S.days,marks:S.marks,perm:S.perm};
+      S.warch[S.wk]={wk:S.wk,sem:S.sem,classes:clone(S.classes),cols:[...S.cols],pi:S.pi,days:S.days,marks:S.marks,perm:S.perm,sl:clone(S.sl),tm:clone(TM(S))};
     S.wk=ws;S.marks={};S.perm={};S.cpos={};
     S.days=[0,1,2,3,4].map(i=>{const g=new Date(addD(ws,i)+'T12:00:00'),p=hijri(g);
       return{k:hkey(g),w:g.toLocaleDateString('ar',{weekday:'long'}),d:+p.day,m:+p.month}});
@@ -157,42 +174,65 @@ const psec=p=>Math.max(0,Math.floor(((p.t1||Date.now())-p.t0)/1000));
 const pfmt=p=>{const s=psec(p);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 const pcls=p=>`pm s${stg(Math.floor(psec(p)/60))}${p.t1?'':' run'}`;
 const setP=(td,p)=>{const hl=td.classList.contains('hl')?' hl':'';td.className='c '+(p?pcls(p):'pm')+hl;td.textContent=p?pfmt(p):''};
+const PAL=['#1d6fb8','#2a9d62','#c2185b','#e07a00','#7b2cbf','#00838f'];
+const DN=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
+const TM=X=>X.tm||S.tsets[S.tcur].t;
+const hasSched=(X,id)=>Object.values(X.sl||{}).includes(id);
+const dayPL=(X,c,di)=>{
+  if(!hasSched(X,c.id))return[0];
+  const a=[];for(let p=1;p<=6;p++)if((X.sl||{})[di+'|'+p]===c.id)a.push(p);return a.length?a:null};
+const plab=PL=>PL&&PL[0]?' · '+PL.map(p=>'ح'+nf(p)).join('+'):'';
+function colsOf(X,c){const L=LY(X);return X.days.map((d,di)=>{const PL=dayPL(X,c,di),cc=[];if(PL)L.forEach(k=>PL.forEach(p=>cc.push({k,p})));return{d,di,PL,cc}})}
+function lessonsOf(X){const o={};X.days.forEach((d,di)=>{if(isHol(X,d))return;for(let p=1;p<=6;p++){const id=(X.sl||{})[di+'|'+p];if(id)o[id]=(o[id]||0)+1}});return o}
+function nowLesson(){
+  const n=new Date(),di=n.getDay();if(di>4||sunday(n)!==S.wk)return null;
+  const hm=pad(n.getHours())+':'+pad(n.getMinutes()),tm=TM(S);
+  for(let p=1;p<=6;p++){const t=tm[p-1];if(t&&hm>=t[0]&&hm<t[1]){const id=S.sl[di+'|'+p];return id?{cid:id,p}:null}}return null}
+function autoCur(){const nl=nowLesson();if(nl&&S.classes.some(c=>c.id===nl.cid))S.cur=nl.cid}
+const endOf=k=>{const a=k.split('|'),per=+a[2];if(!per)return 0;const di=S.days.findIndex(d=>d.k===a[1]),t=TM(S)[per-1];
+  return di<0||!t?0:new Date(addD(S.wk,di)+'T'+t[1]+':00').getTime()};
+function autoStop(){let ch=false;
+  for(const k in S.perm){const p=S.perm[k];if(p.t1)continue;const e=endOf(k);if(e&&Date.now()>=e){p.t1=Math.max(p.t0,e);ch=true}}
+  if(ch){save();render2();chips()}return ch}
 function render(){
   const X=D(),c=vc();if(c)sortC(c);
-  $('#ti').innerHTML=(c?`<small>${esc(c.name)}${VIEW?' · أرشيف (للقراءة فقط)':''}</small>`:'')+`<span>${wkTitle(X.wk,X.sem)}</span>`;
+  const nl=VIEW?null:nowLesson();
+  $('#ti').innerHTML=(c?`<small>${esc(c.name)}${VIEW?' · أرشيف (للقراءة فقط)':''}${nl&&nl.cid===c.id?' · الحصة الحالية ح'+nf(nl.p):''}</small>`:'')+`<span>${wkTitle(X.wk,X.sem)}</span>`;
   $('#bk').hidden=!VIEW;
   const mn=$('#mn');
   if(!c){mn.innerHTML='<div class=empty>'+(VIEW?'هذا الفصل لم يكن موجودًا في ذلك الأسبوع.':'لا توجد فصول.<br>افتح القائمة ثم أضف فصلاً.')+'</div>';return}
   if(!c.st.length){mn.innerHTML='<div class=empty>لا يوجد طلاب في هذا الفصل.<br>افتح القائمة ← إضافة طالب.</div>';return}
-  const L=LY(X),n=L.length,KI=L.map(k=>k===null?-1:X.cols.indexOf(k));
+  const L=LY(X),n=L.length,CD=colsOf(X,c);
   let h='<table><thead><tr><th class="n" rowspan=2>#</th><th class="nm" rowspan=2>الاسم</th>';
-  X.days.forEach(d=>h+=`<th class=dh data-k="${d.k}" colspan=${n}>${d.w} ${nf(d.d)}/${nf(d.m)}${isHol(X,d)?' · إجازة':''}</th>`);
+  CD.forEach(o=>{const d=o.d;h+=`<th class=dh data-k="${d.k}" colspan=${o.PL?o.cc.length:n}>${d.w} ${nf(d.d)}/${nf(d.m)}${plab(o.PL)}${isHol(X,d)?' · إجازة':''}</th>`});
   h+='</tr><tr>';
-  X.days.forEach(()=>L.forEach(k=>h+=`<th>${k===null?'⏱':esc(k)}</th>`));
+  CD.forEach(o=>{if(!o.PL)h+=`<th colspan=${n}>لا حصة</th>`;else L.forEach(k=>h+=`<th colspan=${o.PL.length}>${k===null?'⏱':esc(k)}</th>`)});
   h+='</tr></thead><tbody>';
   c.st.forEach((s,i)=>{
     h+=`<tr><td class=n>${nf(i+1)}</td><td class=nm>${esc(s.n)}</td>`;
-    X.days.forEach(d=>{const hl=isHol(X,d)?' hl':'';L.forEach((k,j)=>{
-      if(k===null){const p=X.perm[s.id+'|'+d.k];h+=`<td class="c ${p?pcls(p):'pm'}${hl}" data-p="${s.id}|${d.k}">${p?pfmt(p):''}</td>`}
-      else{const on=X.marks[`${s.id}|${d.k}|${k}`];h+=`<td class="c k${KI[j]%8}${hl}" data-s="${s.id}" data-d="${d.k}" data-c="${esc(k)}">${on?esc(k):''}</td>`}})});
+    CD.forEach(o=>{const d=o.d,hl=isHol(X,d)?' hl':'';
+      if(!o.PL){h+=`<td colspan=${n} class="nl${hl}"></td>`;return}
+      o.cc.forEach(q=>{
+        if(q.k===null){const key=`${s.id}|${d.k}|${q.p}`,p=X.perm[key];h+=`<td class="c ${p?pcls(p):'pm'}${hl}" data-p="${key}">${p?pfmt(p):''}</td>`}
+        else{const on=X.marks[`${s.id}|${d.k}|${q.p}|${q.k}`];h+=`<td class="c k${X.cols.indexOf(q.k)%8}${hl}" data-s="${s.id}" data-d="${d.k}" data-q="${q.p}" data-c="${esc(q.k)}">${on?esc(q.k):''}</td>`}})});
     h+='</tr>';
   });
   h+=`</tbody><tfoot><tr><td class=n></td><td class=nm style="background:var(--bg)">عدد: ${nf(c.st.length)}</td>`;
-  X.days.forEach(d=>L.forEach(k=>h+='<td></td>'));
+  CD.forEach(o=>{if(!o.PL)h+=`<td colspan=${n}></td>`;else o.cc.forEach(()=>h+='<td></td>')});
   mn.innerHTML=h+'</tr></tfoot></table><div style="height:calc(130px + env(safe-area-inset-bottom))"></div>';render2();focusToday();
 }
 $('#mn').addEventListener('click',e=>{
   const t=e.target.closest('td.c');if(!t||VIEW)return;
   const dk=t.dataset.p?t.dataset.p.split('|')[1]:t.dataset.d;
-  if(S.hol[S.wk]||S.dhol[dk])return; // إجازة: تجاهل الضغط
+  if(S.hol[S.wk]||S.dhol[dk])return;
   if(t.dataset.p){
     const pk=t.dataset.p,p=S.perm[pk];
-    if(!p)S.perm[pk]={t0:Date.now(),t1:0};
+    if(!p){const en=endOf(pk);if(en&&Date.now()>=en)return alert('انتهى وقت هذه الحصة.');S.perm[pk]={t0:Date.now(),t1:0}}
     else if(!p.t1)p.t1=Date.now();
     else{if(!confirm('مسح وقت الاستئذان المسجّل؟'))return;delete S.perm[pk]}
     save();render2();chips();return;
   }
-  const k=`${t.dataset.s}|${t.dataset.d}|${t.dataset.c}`;
+  const k=`${t.dataset.s}|${t.dataset.d}|${t.dataset.q}|${t.dataset.c}`;
   if(S.marks[k]){delete S.marks[k];t.textContent=''}else{S.marks[k]=1;t.textContent=t.dataset.c}
   save();render2();
 });
@@ -229,9 +269,9 @@ function render2(){
   document.querySelectorAll('td[data-p]').forEach(td=>setP(td,X.perm[td.dataset.p]));
   const f=document.querySelector('tfoot tr');if(!f)return;
   const cells=[...f.children].slice(2);let i=0;
-  X.days.forEach(d=>LY(X).forEach(k=>{
-    const t=c.st.filter(s=>k===null?X.perm[s.id+'|'+d.k]:X.marks[`${s.id}|${d.k}|${k}`]).length;
-    cells[i++].textContent=t?nf(t):''}));
+  colsOf(X,c).forEach(o=>{if(!o.PL){i++;return}o.cc.forEach(q=>{
+    const t=c.st.filter(s=>q.k===null?X.perm[`${s.id}|${o.d.k}|${q.p}`]:X.marks[`${s.id}|${o.d.k}|${q.p}|${q.k}`]).length;
+    cells[i++].textContent=t?nf(t):''})});
 }
 
 /* ---------- نوافذ ---------- */
@@ -251,6 +291,8 @@ const stuItems=()=>{const c=vc();return c?c.st.map(s=>[s.id,s.n]):[]};
 /* ---------- الإحصائيات ---------- */
 function statHTML(snap,classes,onlyS){
   const P=snap.perm||{};
+  const ix={},dset=new Set(snap.days.map(d=>d.k));
+  for(const k in snap.marks){const a=k.split('|');if(!dset.has(a[1]))continue;const o=ix[a[0]]||(ix[a[0]]={}),cc=a[a.length-1];o[cc]=(o[cc]||0)+1}
   const pr=s=>{let n=0,t=0;for(const k in P)if(k.startsWith(s.id+'|')&&P[k].t1){n++;t+=P[k].t1-P[k].t0}return[n,t]};
   const pf=(n,t)=>n?`${nf(n)} · ${nf(Math.round(t/60000))}د`:'·';
   let h=`<div style="font-size:13px;color:var(--mut)">عدد الأيام: ${nf(snap.days.length)} · ⏱ = عدد مرات الاستئذان · مجموع الدقائق</div>`;
@@ -258,19 +300,20 @@ function statHTML(snap,classes,onlyS){
     const rows=[...c.st].sort(srt).filter(s=>!onlyS||s.id===onlyS);if(!rows.length)return;
     const tot=snap.cols.map(()=>0);let tn=0,tt=0,b='';
     rows.forEach(s=>{
-      const v=snap.cols.map((k,j)=>{let n=0;snap.days.forEach(d=>{if(snap.marks[`${s.id}|${d.k}|${k}`])n++});tot[j]+=n;return n});
+      const o=ix[s.id]||{};const v=snap.cols.map((k,j)=>{const n=o[k]||0;tot[j]+=n;return n});
       const [n,t]=pr(s);tn+=n;tt+=t;
       b+=`<tr><td>${esc(s.n)}</td>${v.map(x=>`<td>${x?nf(x):'·'}</td>`).join('')}<td>${pf(n,t)}</td></tr>`});
-    h+=`<h5>${esc(c.name)}</h5><div style="overflow:auto"><table class=st><tr><th>الاسم</th>${snap.cols.map(k=>`<th>${esc(k)}</th>`).join('')}<th>⏱</th></tr>${b}${onlyS?'':`<tr style="font-weight:700"><td>المجموع</td>${tot.map(x=>`<td>${nf(x)}</td>`).join('')}<td>${pf(tn,tt)}</td></tr>`}</table></div>`;
+    h+=`<h5>${esc(c.name)}${snap.les&&snap.les[c.id]?` · الحصص: ${nf(snap.les[c.id])}`:''}</h5><div style="overflow:auto"><table class=st><tr><th>الاسم</th>${snap.cols.map(k=>`<th>${esc(k)}</th>`).join('')}<th>⏱</th></tr>${b}${onlyS?'':`<tr style="font-weight:700"><td>المجموع</td>${tot.map(x=>`<td>${nf(x)}</td>`).join('')}<td>${pf(tn,tt)}</td></tr>`}</table></div>`;
   });
   return h;
 }
-const snapWeek=()=>({days:S.days.filter(d=>!isHol(S,d)),marks:S.marks,cols:S.cols,perm:S.perm});
+const snapWeek=()=>({days:S.days.filter(d=>!isHol(S,d)),marks:S.marks,cols:S.cols,perm:S.perm,les:lessonsOf(S)});
 function snapAll(){
-  const days=[],marks={},perm={};
-  const add=X=>{X.days.forEach(d=>{if(!isHol(X,d))days.push(d)});Object.assign(marks,X.marks);Object.assign(perm,X.perm)};
+  const days=[],marks={},perm={},les={};
+  const add=X=>{X.days.forEach(d=>{if(!isHol(X,d))days.push(d)});Object.assign(marks,X.marks);Object.assign(perm,X.perm);
+    const l=lessonsOf(X);for(const k in l)les[k]=(les[k]||0)+l[k]};
   Object.keys(S.warch).sort().forEach(k=>{if(S.warch[k].sem===S.sem)add(S.warch[k])});add(S);
-  return{days,marks,cols:S.cols,perm};
+  return{days,marks,cols:S.cols,perm,les};
 }
 const statSnap=async()=>{const k=await pickOne('الإحصائيات على',[['w','هذا الأسبوع'],['t','تراكمية — كل أسابيع هذا الفصل الدراسي']]);return k?(k==='w'?snapWeek():snapAll()):null};
 
@@ -308,7 +351,7 @@ const A={
   const w=k.slice(2),a=S.warch[w];
   const t=await pickOne('ماذا تريد؟',[['v','عرض الجدول (قراءة فقط، ويمكن طباعته)'],['s','إحصائيات هذا الأسبوع']]);
   if(t==='v')VIEW=w;
-  else if(t==='s')await dlg('إحصائيات الأسبوع'+(S.hol[w]?' (إجازة)':''),statHTML({...a,days:a.days.filter(d=>!isHol(a,d))},a.classes),null,1);
+  else if(t==='s')await dlg('إحصائيات الأسبوع'+(S.hol[w]?' (إجازة)':''),statHTML({...a,days:a.days.filter(d=>!isHol(a,d)),les:lessonsOf(a)},a.classes),null,1);
  }
 };
 /* ---------- أدوات الملفات ---------- */
@@ -393,26 +436,74 @@ Object.assign(A,{
   if(!confirm('سيتم استبدال جميع البيانات الحالية بالملف. متابعة؟'))return;
   S=o;S.timers=[];norm();S.arch=S.arch||{};if(!S.classes.some(c=>c.id===S.cur))S.cur=S.classes[0]?.id;rollover();chips()},
  prCls(){const X=D(),c=vc();if(!c||!c.st.length)return alert('لا يوجد طلاب للطباعة');sortC(c);
-  const L=LY(X),n=L.length,per=5,pc=(s,d)=>{const p=X.perm[s.id+'|'+d.k];return p&&p.t1?pfmt(p):''};let h='';
-  for(let i=0;i<X.days.length;i+=per){const ds=X.days.slice(i,i+per);
-    h+=`<table class=pt><caption>${esc(c.name)} · ${wkTitle(X.wk,X.sem)}</caption><tr><th rowspan=2>#</th><th rowspan=2>الاسم</th>${ds.map(d=>`<th colspan=${n}>${dayH(d)}${isHol(X,d)?' · إجازة':''}</th>`).join('')}</tr><tr>${ds.map(()=>L.map(k=>`<th>${k===null?'⏱':esc(k)}</th>`).join('')).join('')}</tr>`;
-    c.st.forEach((s,j)=>{h+=`<tr><td>${nf(j+1)}</td><td class=l>${esc(s.n)}</td>${ds.map(d=>L.map(k=>`<td>${k===null?pc(s,d):X.marks[`${s.id}|${d.k}|${k}`]?esc(k):''}</td>`).join('')).join('')}</tr>`});
-    h+='</table>'}
-  doPrint(h,1)},
+  const L=LY(X),n=L.length,CD=colsOf(X,c),pc=(s,d,p)=>{const o=X.perm[`${s.id}|${d.k}|${p}`];return o&&o.t1?pfmt(o):''};
+  let h=`<table class=pt><caption>${esc(c.name)} · ${wkTitle(X.wk,X.sem)}</caption><tr><th rowspan=2>#</th><th rowspan=2>الاسم</th>${CD.map(o=>`<th colspan=${o.PL?o.cc.length:n}>${dayH(o.d)}${plab(o.PL)}${isHol(X,o.d)?' · إجازة':''}</th>`).join('')}</tr><tr>${CD.map(o=>o.PL?L.map(k=>`<th colspan=${o.PL.length}>${k===null?'⏱':esc(k)}</th>`).join(''):`<th colspan=${n}>لا حصة</th>`).join('')}</tr>`;
+  c.st.forEach((s,j)=>{h+=`<tr><td>${nf(j+1)}</td><td class=l>${esc(s.n)}</td>${CD.map(o=>o.PL?o.cc.map(q=>`<td>${q.k===null?pc(s,o.d,q.p):X.marks[`${s.id}|${o.d.k}|${q.p}|${q.k}`]?esc(q.k):''}</td>`).join(''):`<td colspan=${n}></td>`).join('')}</tr>`});
+  doPrint(h+'</table>',1)},
  async prStu(){const id=await pickOne('اختر الطالب للطباعة',stuItems());if(!id)return;const X=D(),c=vc(),s=c.st.find(x=>x.id===id);
-  const L=LY(X),pc=d=>{const p=X.perm[s.id+'|'+d.k];return p&&p.t1?pfmt(p):''},has=(d,k)=>k===null?!!pc(d):!!X.marks[`${s.id}|${d.k}|${k}`];
+  const L=LY(X),pc=(d,p)=>{const o=X.perm[`${s.id}|${d.k}|${p}`];return o&&o.t1?pfmt(o):''};
+  const tl={};for(const k in X.marks){const a=k.split('|');if(a[0]===s.id){const cc=a[a.length-1];tl[cc]=(tl[cc]||0)+1}}
+  const pn=Object.keys(X.perm).filter(k=>k.startsWith(s.id+'|')&&X.perm[k].t1).length;
   let h=`<table class=pt><caption>${esc(s.n)} · ${esc(c.name)} · ${wkTitle(X.wk,X.sem)}</caption><tr><th>اليوم</th>${L.map(k=>`<th>${k===null?'⏱':esc(k)}</th>`).join('')}</tr>`;
-  X.days.forEach(d=>h+=`<tr><td class=l>${dayH(d)}${isHol(X,d)?' · إجازة':''}</td>${L.map(k=>`<td>${k===null?pc(d):has(d,k)?esc(k):''}</td>`).join('')}</tr>`);
-  h+=`<tr style="font-weight:700"><td class=l>المجموع</td>${L.map(k=>`<td>${nf(X.days.filter(d=>has(d,k)).length)}</td>`).join('')}</tr></table>`;
-  doPrint(h,0)}
+  X.days.forEach((d,di)=>{const PL=dayPL(X,c,di),lab=dayH(d)+(isHol(X,d)?' · إجازة':'');
+    if(!PL){h+=`<tr><td class=l>${lab} · لا حصة</td><td colspan=${L.length}></td></tr>`;return}
+    PL.forEach(p=>{h+=`<tr><td class=l>${lab}${p?' · ح'+nf(p):''}</td>${L.map(k=>`<td>${k===null?pc(d,p):X.marks[`${s.id}|${d.k}|${p}|${k}`]?esc(k):''}</td>`).join('')}</tr>`})});
+  h+=`<tr style="font-weight:700"><td class=l>المجموع</td>${L.map(k=>`<td>${nf(k===null?pn:tl[k]||0)}</td>`).join('')}</tr></table>`;
+  doPrint(h,0)},
+ prSched(){const tm=TM(S);if(!Object.keys(S.sl).length)return alert('لم يُدخل الجدول بعد');
+  const nm=id=>(S.classes.find(c=>c.id===id)||{}).name||'';
+  let h=`<table class=pt><caption>الجدول الدراسي</caption><tr><th>الحصة</th>${DN.map(d=>`<th>${d}</th>`).join('')}</tr>`;
+  for(let p=1;p<=6;p++)h+=`<tr><td class=l>ح${nf(p)} · ${tm[p-1][0]} – ${tm[p-1][1]}</td>${[0,1,2,3,4].map(di=>`<td>${esc(nm(S.sl[di+'|'+p]))}</td>`).join('')}</tr>`;
+  doPrint(h+'</table>',1)},
+ async schedEdit(){
+  const cs=S.classes;if(!cs.length)return alert('أضف فصولًا أولًا');
+  const W=clone(S.sl),tm=TM(S);let br=cs[0].id;
+  const col=id=>PAL[cs.findIndex(c=>c.id===id)%PAL.length];
+  const draw=()=>{
+    const cnt={},two={},day={};
+    Object.keys(W).forEach(k=>{const [di]=k.split('|'),c=W[k];cnt[c]=(cnt[c]||0)+1;two[c+'|'+di]=(two[c+'|'+di]||0)+1;day[di]=(day[di]||0)+1});
+    let h=`<div class=brs>${cs.map(c=>`<button data-b="${c.id}" class="${br===c.id?'on':''}" style="--c:${col(c.id)}">${esc(c.name)}</button>`).join('')}<button data-b="" class="${br===''?'on':''}">فارغ</button></div><table class=sg><tr><th></th>${DN.map(d=>`<th>${d}</th>`).join('')}</tr>`;
+    for(let p=1;p<=6;p++){const t=tm[p-1]||['',''];
+      h+=`<tr${p===4?' style="border-top:3px double var(--mut)"':''}><th>ح${nf(p)}<small>${t[0]}</small></th>`;
+      for(let di=0;di<5;di++){const id=W[di+'|'+p],c=cs.find(x=>x.id===id);h+=`<td data-s="${di}|${p}" ${c?`style="background:${col(id)}"`:'class=e'}>${c?esc(c.name):'—'}</td>`}
+      h+='</tr>'}
+    h+='</table><div class=cn>';
+    cs.forEach(c=>{const n=cnt[c.id]||0,tw=[0,1,2,3,4].filter(di=>(two[c.id+'|'+di]||0)===2).length,ov=[0,1,2,3,4].some(di=>(two[c.id+'|'+di]||0)>2),bad=n!==6||tw!==1||ov;
+      h+=`<span style="color:${bad?'#d62828':'#2a9d62'};margin-inline-end:12px;white-space:nowrap">${esc(c.name)}: ${nf(n)}/${nf(6)}${bad?' ⚠':' ✓'}</span>`});
+    h+=`<br>المجموع: ${nf(Object.keys(W).length)} حصة · حسب الأيام: ${[0,1,2,3,4].map(di=>nf(day[di]||0)).join(' · ')}<br><small style="color:var(--mut)">المتوقع: ٦ حصص لكل فصل، وحصتان في يوم واحد فقط. اختر فصلًا من الأعلى ثم اضغط الخانات (فارغ = لا توجد حصة).</small></div>`;
+    $('#sg').innerHTML=h};
+  const pr=dlg('الجدول الدراسي','<div id=sg></div>',()=>true,0,['حفظ','إلغاء']);
+  $('#m .bx').classList.add('w');draw();
+  $('#sg').onclick=e=>{const b=e.target.closest('[data-b]'),t=e.target.closest('[data-s]');
+    if(b)br=b.dataset.b;else if(t){if(br)W[t.dataset.s]=br;else delete W[t.dataset.s]}draw()};
+  if(!(await pr))return;
+  const aff=Object.keys(S.sl).some(k=>{if(S.sl[k]===W[k])return false;const [di,p]=k.split('|'),d=S.days[+di],c=S.classes.find(x=>x.id===S.sl[k]);if(!d||!c)return false;
+    return c.st.some(s=>Object.keys(S.marks).some(m=>m.startsWith(`${s.id}|${d.k}|${p}|`))||S.perm[`${s.id}|${d.k}|${p}`])});
+  if(aff&&!(await yn('في الحصص التي غيّرتها علامات مسجّلة لهذا الأسبوع. ستبقى محفوظة وتدخل في الإحصائيات لكنها لن تظهر في الجدول. هل تريد المتابعة؟')))return;
+  S.sl=W},
+ async timesEdit(){
+  const W=clone(S.tsets);let cur=S.tcur;
+  let rows='';for(let i=0;i<6;i++)rows+=`<div class=tr><span style="width:34px">ح${nf(i+1)}</span><input type=time id=a${i}><input type=time id=b${i}></div>`;
+  const read=()=>{const s=W[cur];s.n=$('#tn').value.trim()||s.n;s.t=[0,1,2,3,4,5].map(i=>[$('#a'+i).value,$('#b'+i).value])};
+  const pr=dlg('أوقات الحصص',`<select id=ts></select><input type=text id=tn style="margin:8px 0" placeholder="اسم المجموعة">${rows}<div class=bt><button class=g id=t0>الافتراضي</button><button class=g id=tw>مجموعة جديدة</button><button class=g id=tx>حذف</button></div>`,()=>{
+    read();for(const t of W[cur].t)if(!t[0]||!t[1]||t[0]>=t[1]){alert('تحقق من الأوقات: يجب أن تكون النهاية بعد البداية.');return null}return true},0,['حفظ واعتماد','إلغاء']);
+  const fill=()=>{const s=W[cur];$('#tn').value=s.n;s.t.forEach((t,i)=>{$('#a'+i).value=t[0];$('#b'+i).value=t[1]})};
+  const opts=()=>{$('#ts').innerHTML=W.map((s,i)=>`<option value="${i}"${i===cur?' selected':''}>${esc(s.n)}${i===S.tcur?' (المعتمدة)':''}</option>`).join('')};
+  opts();fill();
+  $('#ts').onchange=()=>{read();cur=+$('#ts').value;opts();fill()};
+  $('#t0').onclick=()=>{DT.forEach((t,i)=>{$('#a'+i).value=t[0];$('#b'+i).value=t[1]})};
+  $('#tw').onclick=()=>{read();W.push({n:'مجموعة جديدة',t:clone(W[cur].t)});cur=W.length-1;opts();fill()};
+  $('#tx').onclick=()=>{if(W.length<2)return alert('لا يمكن حذف المجموعة الوحيدة');W.splice(cur,1);cur=0;opts();fill()};
+  if(!(await pr))return;
+  S.tsets=W;S.tcur=cur}
 });
-const RO=['prCls','prStu','archive','stAll','stCls','stStu'];
-const MENU=[['الأسبوع'],['الفصل الدراسي (الأول / الثاني)','setSem'],['تعديل رقم الأسبوع الحالي','setWk'],['إجازة هذا الأسبوع (تفعيل / إلغاء)','wkHol'],['الفصول'],['إضافة فصل','addClass'],['تعديل الفصل الحالي','editClass'],['حذف الفصل الحالي','delClass'],
+const RO=['prSched','prCls','prStu','archive','stAll','stCls','stStu'];
+const MENU=[['الأسبوع'],['الفصل الدراسي (الأول / الثاني)','setSem'],['تعديل رقم الأسبوع الحالي','setWk'],['إجازة هذا الأسبوع (تفعيل / إلغاء)','wkHol'],['الجدول الدراسي'],['الجدول الدراسي (تعديل)','schedEdit'],['أوقات الحصص','timesEdit'],['طباعة الجدول','prSched'],['الفصول'],['إضافة فصل','addClass'],['تعديل الفصل الحالي','editClass'],['حذف الفصل الحالي','delClass'],
  ['الطلاب'],['إضافة طالب','addStu'],['استيراد أسماء (Excel / CSV)','impNames'],['تعديل طالب','editStu'],['نقل طالب','moveStu'],['حذف طالب','delStu'],
  ['الأعمدة والإحصائيات'],['إضافة عمود','addCol'],['تعديل عمود','editCol'],['حذف عمود','delCol'],['إحصائيات: كل الفصول','stAll'],['إحصائيات: هذا الفصل','stCls'],['إحصائيات: طالب','stStu'],['الأرشيف','archive'],
  ['الطباعة والبيانات'],['طباعة: هذا الفصل','prCls'],['طباعة: طالب','prStu'],['تصدير البيانات','exp'],['استيراد البيانات','imp']];
 function drawer(){
-  let h='<h4>الفصل</h4>'+S.classes.map(c=>`<button class="cl ${c.id===S.cur?'on':''}" data-c="${c.id}">${esc(c.name)}</button>`).join('');
+  let h='<h4>الفصل</h4>'+S.classes.map(c=>`<button class="cl ${c.id===S.cur?'on':''}" data-c="${c.id}">${esc(c.name)}${(()=>{const n=VIEW?null:nowLesson();return n&&n.cid===c.id?' ● الآن (ح'+nf(n.p)+')':''})()}</button>`).join('');
   MENU.forEach(m=>h+=m[1]?`<button data-a="${m[1]}">${m[0]}</button>`:`<h4>${m[0]}</h4>`);
   $('#nv').innerHTML=h;
 }
@@ -435,6 +526,7 @@ function chips(){
     return `<div class="chip" data-t="${k}" style="left:${x}px;top:${y}px"><b></b><span></span></div>`}).join('');tick();
 }
 function tick(){
+  if(autoStop())return;
   Object.keys(S.perm).forEach(k=>{
     const p=S.perm[k];if(p.t1)return;
     const st=stg(Math.floor(psec(p)/60));
@@ -464,8 +556,8 @@ $('#fl').addEventListener('pointercancel',()=>{dg=null});
 setInterval(tick,1000);
 
 /* ---------- تشغيل ---------- */
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){rollover();render();chips();tick()}});
-rollover();render();chips();requestAnimationFrame(focusToday);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){rollover();if(!VIEW)autoCur();render();chips();tick()}});
+rollover();autoCur();render();chips();requestAnimationFrame(focusToday);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
 </body>
